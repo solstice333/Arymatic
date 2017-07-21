@@ -6,7 +6,10 @@ A way to automate things the Arya way
 
 ## Usage:
 
-Not there yet. Still implementing lower level API's that can be used
+To run unit tests do
+
+`$ cd <repo_root>\tests`
+`$ python -m unittest discover -v -p *_test.py`
 
 ## TODO:
 
