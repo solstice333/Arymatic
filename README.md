@@ -9,6 +9,7 @@ A way to automate things the Arya way
 To run unit tests do
 
 `$ cd <repo_root>\tests`
+
 `$ python -m unittest discover -v -p *_test.py`
 
 ## TODO:
