@@ -115,3 +115,7 @@ class OthersTest(unittest.TestCase):
       with MockRestore(Others, '_query_user',
                        MagicMock(side_effect=self.mock_query_user)):
          self.assertFalse(others.is_logged_on())
+
+if __name__ == '__main__':
+   unittest.main()
+   
