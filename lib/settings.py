@@ -40,16 +40,16 @@ class Settings(Mapping):
       return v in valid_v
 
    @staticmethod
-   def get_type_to_is_in():
+   def get_type_to_one_of():
       return {
          'primitive': Settings._is_in_prim,
-         'list': Settings._is_in_list,
-         'dict': Settings._is_in_dict
+         'list': Settings._is_sublist_in_one_of_lists,
+         'dict': Settings._is_dict_in_one_of_dicts
       }
 
    @staticmethod
    def _is_sublist_in_one_of_lists(sublist, lists):
-      type_to_is_in = Settings.get_type_to_is_in()
+      type_to_one_of = Settings.get_type_to_one_of()
 
       for vl in lists:
          next_vl = False
@@ -57,20 +57,28 @@ class Settings(Mapping):
             if Settings._is_primitive(e):
                t = 'primitive'
             elif Settings._is_list(e):
-               e = [e]
+               vl = [l for l in vl if isinstance(l, list)]
                t = 'list'
             elif Settings._is_dict(e):
+               vl = [d for d in vl if isinstance(d, dict)]
                t = 'dict'
             else:
                raise InvalidSettingError()
 
-            if not type_to_is_in[t](e, vl):
+            if not type_to_one_of[t](e, vl):
                next_vl = True
                break
 
          if next_vl:
             continue
          return True
+      return False
+
+   @staticmethod
+   def _is_dict_in_one_of_dicts(d, dicts):
+      for vd in dicts:
+         if Settings._is_in_dict(d, vd):
+            return True
       return False
 
    @staticmethod
@@ -84,13 +92,27 @@ class Settings(Mapping):
             if not Settings._is_sublist_in_one_of_lists(elem, valid_lists):
                return False
          elif Settings._is_dict(elem):
-            if not Settings._is_in_dict(elem, valid_l):
+            valid_dicts = [d for d in valid_l if isinstance(d, dict)]
+            if not Settings._is_dict_in_one_of_dicts(elem, valid_dicts):
                return False
       return True
 
    @staticmethod
-   def _is_in_dict():
-      pass
+   def _is_in_dict(d, valid_d):
+      for k, v in d.items():
+         if k not in valid_d:
+            return False
+         else:
+            if Settings._is_primitive(v):
+               if not Settings._is_in_prim(v, valid_d[k]):
+                  return False
+            elif Settings._is_list(v):
+               if not Settings._is_in_list(v, valid_d[k]):
+                  return False
+            elif Settings._is_dict(v):
+               if not Settings._is_in_dict(v, valid_d[k]):
+                  return False
+      return True
 
    @staticmethod
    def _primitive_validity_check(v, valid_v):

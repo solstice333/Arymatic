@@ -15,6 +15,7 @@ class SettingsTest(unittest.TestCase):
       self.assertFalse(Settings._is_in_prim('a', ['x', 'y', 'z']))
 
    def test_is_in_list(self):
+      self.assertTrue(Settings._is_in_list(['x','y'], ['a','y','c','x']))
       self.assertTrue(Settings._is_in_list([['x']], [['z'], ['x','y']]))
       self.assertTrue(Settings._is_in_list([['x']], [['z'], ['x','a']]))
       self.assertFalse(Settings._is_in_list([['x']], [['z'], ['b','a']]))
@@ -31,6 +32,50 @@ class SettingsTest(unittest.TestCase):
       self.assertTrue(Settings._is_in_list([[[[['a','c'], ['y']]]]], [[[[['y', 'z'], ['a', 'b', 'c']]]]]))
       self.assertFalse(Settings._is_in_list([[[['a','c'], ['y']]]], [[[[['y','z'],['a', 'b', 'c']]]]]))
       self.assertFalse(Settings._is_in_list([[[[['a','y'], ['c']]]]], [[[[['y', 'z'], ['a', 'b', 'c']]]]]))
+
+   def test_is_in_dict(self):
+      self.assertTrue(Settings._is_in_dict({'a':'b'}, {'c':['d'],'a':['b']}))
+      self.assertFalse(Settings._is_in_dict({'a':'b'}, {'c':['d'],'a':['c']}))
+      self.assertTrue(Settings._is_in_dict({'a':['b','c']}, {'d':['e','f'],'a':['x','c','g','b','h']}))
+      self.assertFalse(Settings._is_in_dict({'a':['b','c']}, {'d':['e','f'],'a':['x','c','g','i','h']}))
+      self.assertTrue(Settings._is_in_dict({'a':{'b':'c'}}, {'d':['e'],'a':{'f':['g'],'b':['h','c']}}))
+      self.assertFalse(Settings._is_in_dict({'a':{'b':'c'}}, {'d':['e'],'a':{'f':['g'],'b':['h','i']}}))
+
+      self.assertTrue(Settings._is_in_dict(
+         {'a': ['b', ['c']]},
+         {'d': ['e', 'f'], 'a': ['x', ['c', 'g'], 'b', 'h']}))
+      self.assertFalse(Settings._is_in_dict(
+         {'a': ['b', ['c']]},
+         {'d': ['e', 'f'], 'a': ['x', 'c', ['g', 'i'], 'h', 'b']}))
+      self.assertFalse(Settings._is_in_dict(
+         {'a': ['b', ['c']]},
+         {'d': ['e', 'f'], 'a': ['x', ['c', 'g', 'i'], 'h']}))
+
+   def test_list_with_dict(self):
+      self.assertTrue(Settings._is_in_list(
+         [{'a':'d'}],
+         [{'a':['d']}]))
+      self.assertTrue(Settings._is_in_list(
+         [{'a':{'c': 'd'}}],
+         [{'e':['f'],'a':{'h':['i'],'c':['d']}}]))
+      self.assertTrue(Settings._is_in_list(
+         [['y'],[{'f':'g'}]],
+         [['y', 'z'],[{'j':['k'],'f':['g']}]]))
+      self.assertTrue(Settings._is_in_list(
+         [[[[[{'a': {'c': 'd'}}], ['y'], [{'f': 'g'}]]]]],
+         [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
+      self.assertFalse(Settings._is_in_list(
+         [[[[[{'a': {'c': 'd'}}], ['yy'], [{'f': 'g'}]]]]],
+         [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
+      self.assertFalse(Settings._is_in_list(
+         [[[[[{'a': {'c': 'd'}}], ['y'], [{'f': 'h'}]]]]],
+         [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
+      self.assertFalse(Settings._is_in_list(
+         [[[{'a': {'c': 'e'}}]]],
+         [[[{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c']]]))
+      self.assertFalse(Settings._is_in_list(
+         [[[[[{'a': {'c': 'e'}}], ['y'], [{'f': 'g'}]]]]],
+         [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
 
    # def setUp(self):
    #    self.settings = Settings({'foo': 1, 'bar': 'barval'},
