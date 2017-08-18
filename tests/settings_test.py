@@ -62,7 +62,10 @@ class SettingsTest(unittest.TestCase):
          [['y'],[{'f':'g'}]],
          [['y', 'z'],[{'j':['k'],'f':['g']}]]))
       self.assertTrue(Settings._is_in_list(
-         [[[[[{'a': {'c': 'd'}}], ['y'], [{'f': 'g'}]]]]],
+         [[[[['b', {'a': {'c': 'd'}}], ['y'], [{'f': 'g'}]]]]],
+         [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
+      self.assertFalse(Settings._is_in_list(
+         [[[[['f', {'a': {'c': 'd'}}], ['y'], [{'f': 'g'}]]]]],
          [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
       self.assertFalse(Settings._is_in_list(
          [[[[[{'a': {'c': 'd'}}], ['yy'], [{'f': 'g'}]]]]],
@@ -77,7 +80,44 @@ class SettingsTest(unittest.TestCase):
          [[[[[{'a': {'c': 'e'}}], ['y'], [{'f': 'g'}]]]]],
          [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
 
-   # def setUp(self):
+   def test_ctor(self):
+      s = Settings({'foo': 1}, {'foo': [0, 1]})
+      s = Settings({'foo': 1}, {'foo': [0, 1]})
+      s = Settings({'foo': 0, 'bar': 'barval'},
+                   {'foo': [0, 1], 'bar': ['barval', 'barval2']})
+      s = Settings({'foo': 0, 'bar': 'barval2'},
+                   {'foo': [0, 1], 'bar': ['barval', 'barval2']})
+
+      # with self.assertRaises(InvalidSettingError):
+      #    s = Settings({'foo': 1}, {'foo': [0, 2]})
+      # with self.assertRaises(InvalidSettingError):
+      #    s = Settings({'foo': 0, 'bar': 'barval'},
+      #                 {'foo': [0, 1], 'bar': ['barval1', 'barval2']})
+      #
+      # with self.assertRaises(NoOptsError):
+      #    s = Settings({'foo': 0, 'bar': 'barr'}, {'foo': [1, 0], 'bar': []})
+      #
+      # # TODO: implement multiple values in list validation
+      # s = Settings({'foo': ['a', 'b']}, {'foo': ['a', 'b', 'c']})
+      #
+      # # TODO: implement dicts contained in list validation
+      # s = Settings(
+      #    {'foo': [{'bar': 3}, {'baz': 4}]},
+      #    {'foo': [
+      #       {'bar': [4, 3]},
+      #       {'baz': [4, 5]},
+      #       {'mu': [6, 7]}
+      #    ]})
+      #
+      # # TODO implment nested dict validation
+      # s = Settings(
+      #    {'foo': {'bar': 'baz'}},
+      #    {'foo': [
+      #       {'bar': ['mu', 'baz']},
+      #       {'gar': ['gu', 'gaz']}
+      #    ]})
+
+         # def setUp(self):
    #    self.settings = Settings({'foo': 1, 'bar': 'barval'},
    #                             {'foo': [1], 'bar': ['barval']})
    #    self.empty_settings = Settings({}, {})
@@ -89,47 +129,7 @@ class SettingsTest(unittest.TestCase):
    #    with open('foo_settings.json', 'w') as settings:
    #       json.dump({'foo': 1, 'bar': 'barval'}, settings)
    #
-   # def test_ctor(self):
-   #    s = Settings({'foo': 1}, {'foo': [0, 1]})
-   #    self.assertIsInstance(s, Settings)
-   #    s = Settings({'foo': 0}, {'foo': [0, 1]})
-   #    self.assertIsInstance(s, Settings)
-   #    s = Settings({'foo': 0, 'bar': 'barval'},
-   #                 {'foo': [0, 1], 'bar': ['barval', 'barval2']})
-   #    self.assertIsInstance(s, Settings)
-   #    s = Settings({'foo': 0, 'bar': 'barval2'},
-   #                 {'foo': [0, 1], 'bar': ['barval', 'barval2']})
-   #    self.assertIsInstance(s, Settings)
-   #
-   #    with self.assertRaises(InvalidSettingError):
-   #       s = Settings({'foo': 1}, {'foo': [0, 2]})
-   #    with self.assertRaises(InvalidSettingError):
-   #       s = Settings({'foo': 0, 'bar': 'barval'},
-   #                 {'foo': [0, 1], 'bar': ['barval1', 'barval2']})
-   #
-   #    with self.assertRaises(NoOptsError):
-   #       s = Settings({'foo':0, 'bar':'barr'}, {'foo':[1, 0], 'bar':[]})
-   #
-   #    # TODO: implement multiple values in list validation
-   #    s = Settings({'foo': ['a', 'b']}, {'foo': ['a', 'b', 'c']})
-   #
-   #    # TODO: implement dicts contained in list validation
-   #    s = Settings(
-   #       {'foo': [{'bar': 3}, {'baz': 4}]},
-   #       {'foo': [
-   #          {'bar': [4, 3]},
-   #          {'baz': [4, 5]},
-   #          {'mu': [6, 7]}
-   #       ]})
-   #
-   #    # TODO implment nested dict validation
-   #    s = Settings(
-   #       {'foo': {'bar': 'baz'}},
-   #       {'foo': [
-   #          {'bar': ['mu', 'baz']},
-   #          {'gar': ['gu', 'gaz']}
-   #       ]})
-   #
+
    # def test_defaults(self):
    #    s = Settings({}, {'foo': [1, 0], 'bar': ['barval', 'barval2']})
    #    self.assertEqual(s['bar'], 'barval')
