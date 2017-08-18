@@ -95,6 +95,8 @@ class Settings(Mapping):
             valid_dicts = [d for d in valid_l if isinstance(d, dict)]
             if not Settings._is_dict_in_one_of_dicts(elem, valid_dicts):
                return False
+         else:
+            raise InvalidSettingError()
       return True
 
    @staticmethod
@@ -112,6 +114,8 @@ class Settings(Mapping):
             elif Settings._is_dict(v):
                if not Settings._is_in_dict(v, valid_d[k]):
                   return False
+            else:
+               raise InvalidSettingError()
       return True
 
    @staticmethod
@@ -146,7 +150,7 @@ class Settings(Mapping):
       setting values.
       """
 
-      Settings._dict_validity_check(settings, dict)
+      Settings._dict_validity_check(settings, valid)
 
    @staticmethod
    def _init_defaults(settings, valid):
@@ -156,9 +160,13 @@ class Settings(Mapping):
       dict gets updated.
       """
 
-      for setting, opts in valid.items():
-         if setting not in settings:
-            settings[setting] = opts[0]
+      # TODO defaults will be part of a separate dictionary passed into
+      # the ctor. The defaults will be injected on top of the settings
+      # dictionary, before getting validated. Any nonexistent keys
+      # or keys whose associated values are None will be subjected to
+      # default values. Of course if default values don't match up with
+      # the validation dictionary, then failure will result
+      pass
 
    def __init__(self, settings, valid):
       """create a Settings object. |settings| can be a dict or path to json
@@ -179,7 +187,7 @@ class Settings(Mapping):
       except TypeError:
          self._settings = dict(settings)
       Settings._validity_check(self._settings, valid)
-      Settings._init_defaults(self._settings, valid)
+      # Settings._init_defaults(self._settings, valid)
 
    def __getitem__(self, name):
       """return the value associated to setting name |name|. Raise KeyError
