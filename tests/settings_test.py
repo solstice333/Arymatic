@@ -80,8 +80,38 @@ class SettingsTest(unittest.TestCase):
          [[[[[{'a': {'c': 'e'}}], ['y'], [{'f': 'g'}]]]]],
          [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
 
+   def test_default_injection(self):
+      self.assertEqual(
+         Settings._inject_defaults({}, None),
+         {})
+
+      self.assertEqual(
+         Settings._inject_defaults({}, {'foo': 'foov'}),
+         {'foo': 'foov'})
+      self.assertEqual(
+         Settings._inject_defaults({'foo': 'bar'}, {'foo': 'foov'}),
+         {'foo': 'bar'})
+      self.assertEqual(
+         Settings._inject_defaults({'foo': None}, {'foo': 'foov'}),
+         {'foo': 'foov'})
+      self.assertEqual(
+         Settings._inject_defaults(
+            {'foo':'foov','bar':None},
+            {'foo':'foo_default','bar':'bar_default','baz':'baz_default'}),
+         {'foo':'foov','bar':'bar_default','baz':'baz_default'}
+      )
+
+      self.assertEqual(
+         Settings._inject_defaults({'foo':{}}, {'foo':{'bar':'baz'}}),
+         {'foo':{'bar':'baz'}}
+      )
+      self.assertEqual(
+         Settings._inject_defaults({'foo':{'bar':'barv'}}, {'foo':{'bar':'barv','baz':'bazv'}}),
+         {'foo':{'bar':'barv','baz':'bazv'}}
+      )
+
    def test_ctor(self):
-      s = Settings({'foo': 1}, {'foo': [0, 1]})
+      s = Settings({'foo': 0}, {'foo': [0, 1]})
       s = Settings({'foo': 1}, {'foo': [0, 1]})
       s = Settings({'foo': 0, 'bar': 'barval'},
                    {'foo': [0, 1], 'bar': ['barval', 'barval2']})

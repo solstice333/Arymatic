@@ -153,22 +153,31 @@ class Settings(Mapping):
       Settings._dict_validity_check(settings, valid)
 
    @staticmethod
-   def _init_defaults(settings, valid):
-      """initialize any setting in |settings| dict to its default if the
-      setting exists in the |valid| dict, but does not exist in the |settings|
-      dict. The default is the first element in the valid list. The |settings|
-      dict gets updated.
+   def _inject_defaults(settings, defaults):
+      """inject any defaults specified in |defaults| into settings. Default
+      values will only be applied if a key exists in |defaults| and doesn't
+      exist in |settings|, or if a key in |settings| has an associating value
+      of None. If |defaults| is None, |settings| is returned as is.
       """
+      new_settings = {}
 
-      # TODO defaults will be part of a separate dictionary passed into
-      # the ctor. The defaults will be injected on top of the settings
-      # dictionary, before getting validated. Any nonexistent keys
-      # or keys whose associated values are None will be subjected to
-      # default values. Of course if default values don't match up with
-      # the validation dictionary, then failure will result
-      pass
+      if defaults is None:
+         return settings
+      elif settings is None or len(settings) == 0:
+         new_settings = defaults
+      else:
+         for k, v in settings.items():
+            if isinstance(v, dict) or v is None:
+               new_settings[k] = Settings._inject_defaults(v, defaults[k])
+            else:
+               new_settings[k] = settings[k]
 
-   def __init__(self, settings, valid):
+         for k, v in defaults.items():
+            if k not in settings:
+               new_settings[k] = defaults[k]
+      return new_settings
+
+   def __init__(self, settings, valid, defaults=None):
       """create a Settings object. |settings| can be a dict or path to json
       file. |valid| must be a dict. |settings| represents the user settings
       where each pair is a setting name associated to a chosen setting value.
@@ -186,8 +195,8 @@ class Settings(Mapping):
             self._settings = json.load(settings_file)
       except TypeError:
          self._settings = dict(settings)
+      self._settings = Settings._inject_defaults(self._settings, defaults)
       Settings._validity_check(self._settings, valid)
-      # Settings._init_defaults(self._settings, valid)
 
    def __getitem__(self, name):
       """return the value associated to setting name |name|. Raise KeyError
