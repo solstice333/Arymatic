@@ -8,7 +8,6 @@ import re
 class Settings(Mapping):
    """class for accessing settings"""
 
-
    @staticmethod
    def _is_primitive(val):
       prims = [int, float, str, bool]
@@ -52,20 +51,16 @@ class Settings(Mapping):
       if not isinstance(valid_v, list):
          valid_v = [valid_v]
 
-      if v in valid_v:
-         return True
-
-      wildcards = [wc for wc in valid_v if isinstance(wc, str) and '*' in wc]
-      for wc in wildcards:
-         if Settings._is_wildcard_match(v, wc):
+      for pat in valid_v:
+         if isinstance(pat, str):
+            if '*' in pat:
+               if Settings._is_wildcard_match(v, pat):
+                  return True
+            elif re.search(r':re$', pat):
+               if Settings._is_regex_match(v, pat):
+                  return True
+         if v == pat:
             return True
-
-      pats = [pat for pat in valid_v
-              if isinstance(v, str) and re.search(r':re$', v)]
-      for pat in pats:
-         if Settings._is_regex_match(v, pat):
-            return True
-
       return False
 
    @staticmethod
