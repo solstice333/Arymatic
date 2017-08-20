@@ -162,6 +162,30 @@ class SettingsTest(unittest.TestCase):
       with self.assertRaises(InvalidSettingError):
          Settings._validity_check({'foo':'bar'}, {'foo':'*:bool'})
 
+   def test_is_regex_match(self):
+      self.assertTrue(Settings._is_regex_match('foo', r'\w+:re'))
+      self.assertTrue(Settings._is_regex_match('foo', r'F\w:re:I'))
+      self.assertFalse(Settings._is_regex_match('foo', r'F\w$:re:I'))
+      self.assertTrue(Settings._is_regex_match('foo', r'F\w+:re:I '))
+      with self.assertRaises(InvalidRegex):
+         self.assertTrue(Settings._is_regex_match('foo', r'F\w+:re:I Z'))
+      with self.assertRaises(InvalidRegex):
+         self.assertTrue(Settings._is_regex_match('foo', r'F\w+:re:i'))
+      self.assertFalse(Settings._is_regex_match("f\no", r'...:re'))
+      self.assertTrue(Settings._is_regex_match("f\no", r'...:re:S'))
+      self.assertFalse(Settings._is_regex_match("f\no", r'F..:re:S'))
+      self.assertFalse(Settings._is_regex_match("f\no", r'F..:re:I'))
+      self.assertTrue(Settings._is_regex_match("f\no", r'F..:re:IS'))
+      self.assertTrue(Settings._is_regex_match("f\no", r'F..:re:SI'))
+
+      with self.assertRaises(InvalidSettingError):
+         Settings._validity_check({'foo': 'bar'}, {'foo': r'B\w+:re'})
+      Settings._validity_check({'foo': 'bar'}, {'foo': r'B\w:re:I'})
+      Settings._validity_check({'foo': 'b\nr'}, {'foo': r'B.\w:re:IS'})
+      with self.assertRaises(InvalidSettingError):
+         Settings._validity_check({'foo': 'b\nr'}, {'foo': r'B.\w:re:I'})
+      Settings._validity_check({'foo':{'baz':'b\nr'}}, {'foo':{'baz':r'B.\w:re:IS'}})
+
    def test_ctor(self):
       s = Settings({'foo': 0}, {'foo': [0, 1]})
       s = Settings({'foo': 1}, {'foo': [0, 1]})

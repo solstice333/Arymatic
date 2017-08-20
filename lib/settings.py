@@ -8,6 +8,16 @@ import re
 class Settings(Mapping):
    """class for accessing settings"""
 
+   _REPAT = r'(?P<pat>.*?):re(:(?P<flag>[AILMSX]+))?$'
+
+   @staticmethod
+   def get_type_to_one_of():
+      return {
+         'primitive': Settings._is_in_prim,
+         'list': Settings._is_sublist_in_one_of_lists,
+         'dict': Settings._is_dict_in_one_of_dicts
+      }
+
    @staticmethod
    def _is_primitive(val):
       prims = [int, float, str, bool]
@@ -44,7 +54,17 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_regex_match(s, pat):
-      return False
+      pat = pat.rstrip()
+      m = re.search(Settings._REPAT, pat)
+      if m:
+         flags_combined = 0
+         if m.group('flag'):
+            char_to_flag = {
+               'A':re.A, 'I':re.I, 'L':re.L, 'M':re.M, 'S':re.S, 'X':re.X}
+            for flag in list(m.group('flag')):
+               flags_combined |= char_to_flag[flag]
+         return bool(re.search(m.group('pat'), s, flags_combined))
+      raise InvalidRegex(pat)
 
    @staticmethod
    def _is_in_prim(v, valid_v):
@@ -56,20 +76,12 @@ class Settings(Mapping):
             if '*' in pat:
                if Settings._is_wildcard_match(v, pat):
                   return True
-            elif re.search(r':re$', pat):
+            elif re.search(Settings._REPAT, pat):
                if Settings._is_regex_match(v, pat):
                   return True
          if v == pat:
             return True
       return False
-
-   @staticmethod
-   def get_type_to_one_of():
-      return {
-         'primitive': Settings._is_in_prim,
-         'list': Settings._is_sublist_in_one_of_lists,
-         'dict': Settings._is_dict_in_one_of_dicts
-      }
 
    @staticmethod
    def _is_sublist_in_one_of_lists(sublist, lists):
