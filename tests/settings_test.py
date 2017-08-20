@@ -110,6 +110,31 @@ class SettingsTest(unittest.TestCase):
          {'foo':{'bar':'barv','baz':'bazv'}}
       )
 
+   def test_primitive_validity(self):
+      Settings._primitive_validity_check('x', ['x','y','z'])
+      Settings._primitive_validity_check('z', ['x','y','z'])
+
+      with self.assertRaises(InvalidSettingError):
+         Settings._primitive_validity_check('a', ['x','y','z'])
+
+   def test_list_validity(self):
+      Settings._list_validity_check(['x','y'], ['x','y','z'])
+      Settings._list_validity_check(['x','y'], ['x','y','z'])
+      with self.assertRaises(InvalidSettingError):
+         Settings._list_validity_check(['a','y'], ['x','y','z'])
+      Settings._list_validity_check([['x','y'],['a']], [['b','a'],['x','y','z']])
+      with self.assertRaises(InvalidSettingError):
+         Settings._list_validity_check([['x','y'],['c']], [['b','a'],['x','y','z']])
+
+   def test_dict_validity(self):
+      Settings._dict_validity_check({'foo':'foov'},{'foo':['foov']})
+      with self.assertRaises(InvalidSettingError):
+         Settings._dict_validity_check({'foo':'foov'},{'foo':['foovv']})
+      Settings._dict_validity_check({'foo':{'bar':'barv'}},{'foo':{'baz':['bazv'],'bar':['barvv','barv']}})
+      Settings._dict_validity_check({'foo':{'bar':'barv'}},{'foo':{'baz':['bazv'],'bar':'barv'}})
+      with self.assertRaises(InvalidSettingError):
+         Settings._dict_validity_check({'foo':{'bar':'barv'}},{'foo':{'baz':['bazv'],'bar':'barvv'}})
+
    def test_wildcard_validity(self):
       self.assertTrue(Settings._is_wildcard_match('foo', '*'))
       self.assertTrue(Settings._is_wildcard_match(3, '*'))
@@ -127,6 +152,15 @@ class SettingsTest(unittest.TestCase):
 
       with self.assertRaises(InvalidWildcard):
          Settings._is_wildcard_match(3.5, '*:foo')
+
+      self.assertTrue(Settings._is_in_prim('foo', '*'))
+      self.assertTrue(Settings._is_in_prim('foo', '*:str'))
+      self.assertFalse(Settings._is_in_prim('foo', '*:bool'))
+
+      Settings._validity_check({'foo':'bar'}, {'foo':'*'})
+      Settings._validity_check({'foo':'bar'}, {'foo':'*:str'})
+      with self.assertRaises(InvalidSettingError):
+         Settings._validity_check({'foo':'bar'}, {'foo':'*:bool'})
 
    def test_ctor(self):
       s = Settings({'foo': 0}, {'foo': [0, 1]})

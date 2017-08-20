@@ -49,6 +49,9 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_in_prim(v, valid_v):
+      if not isinstance(valid_v, list):
+         valid_v = [valid_v]
+
       if v in valid_v:
          return True
 
@@ -151,21 +154,13 @@ class Settings(Mapping):
 
    @staticmethod
    def _list_validity_check(l, valid_l):
-      idx = 0
-      for elem in l:
-         if Settings._is_primitive(elem):
-            Settings._primitive_validity_check(elem, valid_l[idx])
-         idx += 1
+      if not Settings._is_in_list(l, valid_l):
+         raise InvalidSettingError()
 
    @staticmethod
    def _dict_validity_check(d, valid_d):
-      for k, v in d.items():
-         if Settings._is_primitive(v):
-            Settings._primitive_validity_check(v, valid_d[k])
-         elif isinstance(v, list):
-            Settings._list_validity_check(v, valid_d[k])
-         elif isinstance(v, dict):
-            Settings._dict_validity_check(v, valid_d[k])
+      if not Settings._is_in_dict(d, valid_d):
+         raise InvalidSettingError()
 
    @staticmethod
    def _validity_check(settings, valid):
