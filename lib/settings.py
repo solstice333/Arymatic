@@ -26,18 +26,44 @@ class Settings(Mapping):
       return isinstance(val, dict)
 
    @staticmethod
-   def _wildcard_validity_check(key, val):
-      # TODO
-      # glob_pat = re.compile(r'\*(:(?P<type>\w+))?')
-      # for s in val[setting]:
-      #    m = glob_pat.match(s)
-      #    if m:
-      #       m.group('type')
-      pass
+   def _is_wildcard_match(s, wildcard):
+      wildcard = wildcard.strip()
+      glob_pat = re.compile(r'\*(:(?P<type>\w+))?$')
+      m = glob_pat.match(wildcard)
+      if m:
+         if m.group('type'):
+            type_to_meth = globals()['__builtins__']
+            type_to_meth = {k:v for k,v in type_to_meth.items()
+                        if k in ['str','int','float','bool']}
+            try:
+               return isinstance(s, type_to_meth[m.group('type')])
+            except KeyError:
+               raise InvalidWildcard("{} is an invalid type in {}".format(
+                  m.group('type'), wildcard))
+         return True
+      raise InvalidWildcard(wildcard)
+
+   @staticmethod
+   def _is_regex_match(s, pat):
+      return False
 
    @staticmethod
    def _is_in_prim(v, valid_v):
-      return v in valid_v
+      if v in valid_v:
+         return True
+
+      wildcards = [wc for wc in valid_v if isinstance(wc, str) and '*' in wc]
+      for wc in wildcards:
+         if Settings._is_wildcard_match(v, wc):
+            return True
+
+      pats = [pat for pat in valid_v
+              if isinstance(v, str) and re.search(r':re$', v)]
+      for pat in pats:
+         if Settings._is_regex_match(v, pat):
+            return True
+
+      return False
 
    @staticmethod
    def get_type_to_one_of():

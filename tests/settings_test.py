@@ -110,6 +110,24 @@ class SettingsTest(unittest.TestCase):
          {'foo':{'bar':'barv','baz':'bazv'}}
       )
 
+   def test_wildcard_validity(self):
+      self.assertTrue(Settings._is_wildcard_match('foo', '*'))
+      self.assertTrue(Settings._is_wildcard_match(3, '*'))
+      self.assertTrue(Settings._is_wildcard_match(False, '*'))
+      self.assertTrue(Settings._is_wildcard_match(3.5, '*'))
+
+      self.assertTrue(Settings._is_wildcard_match('foo', '*:str'))
+      self.assertFalse(Settings._is_wildcard_match('foo', '*:bool'))
+      self.assertTrue(Settings._is_wildcard_match(True, '*:bool'))
+      self.assertFalse(Settings._is_wildcard_match(3, '*:bool'))
+      self.assertTrue(Settings._is_wildcard_match(3, '*:int'))
+      self.assertFalse(Settings._is_wildcard_match(3.5, '*:int'))
+      self.assertTrue(Settings._is_wildcard_match(3.5, '*:float'))
+      self.assertFalse(Settings._is_wildcard_match('foo', '*:float'))
+
+      with self.assertRaises(InvalidWildcard):
+         Settings._is_wildcard_match(3.5, '*:foo')
+
    def test_ctor(self):
       s = Settings({'foo': 0}, {'foo': [0, 1]})
       s = Settings({'foo': 1}, {'foo': [0, 1]})
