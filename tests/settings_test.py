@@ -186,6 +186,21 @@ class SettingsTest(unittest.TestCase):
          Settings._validity_check({'foo': 'b\nr'}, {'foo': r'B.\w:re:I'})
       Settings._validity_check({'foo':{'baz':'b\nr'}}, {'foo':{'baz':r'B.\w:re:IS'}})
 
+      Settings._validity_check({'foo':345}, {'foo':r'\d+:re'})
+      Settings._validity_check({'foo':True}, {'foo':r'True:re'})
+      Settings._validity_check({'foo':False}, {'foo':r'False:re'})
+      Settings._validity_check({'foo':3.4}, {'foo':r'\d+(\.\d+)?:re'})
+      Settings._validity_check({'foo':34}, {'foo':r'\d+(\.\d+)?:re'})
+
+   def test_is_in_prim_order(self):
+      Settings._validity_check({'foo':'foov'},{'foo':['foov','*:bool',r'\d+:re']})
+      Settings._validity_check({'foo':True},{'foo':['foov','*:bool',r'\d+:re']})
+      Settings._validity_check({'foo':3},{'foo':['foov','*:bool',r'\d+:re']})
+      Settings._validity_check({'foo':'True'},{'foo':[r'True:re','*:bool']})
+      Settings._validity_check({'foo':False},{'foo':[r'True:re','*:bool']})
+      with self.assertRaises(InvalidSettingError):
+         Settings._validity_check({'foo':False},{'foo':[r'True:re']})
+
    def test_ctor(self):
       s = Settings({'foo': 0}, {'foo': [0, 1]})
       s = Settings({'foo': 1}, {'foo': [0, 1]})
@@ -194,18 +209,17 @@ class SettingsTest(unittest.TestCase):
       s = Settings({'foo': 0, 'bar': 'barval2'},
                    {'foo': [0, 1], 'bar': ['barval', 'barval2']})
 
-      # with self.assertRaises(InvalidSettingError):
-      #    s = Settings({'foo': 1}, {'foo': [0, 2]})
-      # with self.assertRaises(InvalidSettingError):
-      #    s = Settings({'foo': 0, 'bar': 'barval'},
-      #                 {'foo': [0, 1], 'bar': ['barval1', 'barval2']})
-      #
-      # with self.assertRaises(NoOptsError):
-      #    s = Settings({'foo': 0, 'bar': 'barr'}, {'foo': [1, 0], 'bar': []})
-      #
-      # # TODO: implement multiple values in list validation
-      # s = Settings({'foo': ['a', 'b']}, {'foo': ['a', 'b', 'c']})
-      #
+      with self.assertRaises(InvalidSettingError):
+         s = Settings({'foo': 1}, {'foo': [0, 2]})
+      with self.assertRaises(InvalidSettingError):
+         s = Settings({'foo': 0, 'bar': 'barval'},
+                      {'foo': [0, 1], 'bar': ['barval1', 'barval2']})
+
+      with self.assertRaises(InvalidSettingError):
+         s = Settings({'foo': 0, 'bar': 'barr'}, {'foo': [1, 0], 'bar': []})
+
+      s = Settings({'foo': ['a', 'b']}, {'foo': ['a', 'b', 'c']})
+
       # # TODO: implement dicts contained in list validation
       # s = Settings(
       #    {'foo': [{'bar': 3}, {'baz': 4}]},

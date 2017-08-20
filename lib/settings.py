@@ -77,7 +77,7 @@ class Settings(Mapping):
                if Settings._is_wildcard_match(v, pat):
                   return True
             elif re.search(Settings._REPAT, pat):
-               if Settings._is_regex_match(v, pat):
+               if Settings._is_regex_match(str(v), pat):
                   return True
          if v == pat:
             return True
