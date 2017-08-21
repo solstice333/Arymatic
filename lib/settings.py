@@ -136,6 +136,13 @@ class Settings(Mapping):
       return True
 
    @staticmethod
+   def _has_all_keys_from(d, valid_d):
+      for k, v in valid_d.items():
+         if k not in d:
+            return False
+      return True
+
+   @staticmethod
    def _is_in_dict(d, valid_d):
       for k, v in d.items():
          if k not in valid_d:
@@ -148,11 +155,17 @@ class Settings(Mapping):
                if not Settings._is_in_list(v, valid_d[k]):
                   return False
             elif Settings._is_dict(v):
-               if not Settings._is_in_dict(v, valid_d[k]):
-                  return False
+               if isinstance(valid_d[k], dict):
+                  if not Settings._is_in_dict(v, valid_d[k]):
+                     return False
+               elif isinstance(valid_d[k], list):
+                  if not Settings._is_dict_in_one_of_dicts(v, valid_d[k]):
+                     return False
+               else:
+                  raise InvalidSettingError()
             else:
                raise InvalidSettingError()
-      return True
+      return Settings._has_all_keys_from(d, valid_d)
 
    @staticmethod
    def _primitive_validity_check(v, valid_v):

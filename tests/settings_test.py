@@ -34,15 +34,16 @@ class SettingsTest(unittest.TestCase):
       self.assertFalse(Settings._is_in_list([[[[['a','y'], ['c']]]]], [[[[['y', 'z'], ['a', 'b', 'c']]]]]))
 
    def test_is_in_dict(self):
-      self.assertTrue(Settings._is_in_dict({'a':'b'}, {'c':['d'],'a':['b']}))
+      self.assertTrue(Settings._is_in_dict({'a':'b','c':'d'}, {'c':['d'],'a':['b']}))
       self.assertFalse(Settings._is_in_dict({'a':'b'}, {'c':['d'],'a':['c']}))
-      self.assertTrue(Settings._is_in_dict({'a':['b','c']}, {'d':['e','f'],'a':['x','c','g','b','h']}))
-      self.assertFalse(Settings._is_in_dict({'a':['b','c']}, {'d':['e','f'],'a':['x','c','g','i','h']}))
-      self.assertTrue(Settings._is_in_dict({'a':{'b':'c'}}, {'d':['e'],'a':{'f':['g'],'b':['h','c']}}))
-      self.assertFalse(Settings._is_in_dict({'a':{'b':'c'}}, {'d':['e'],'a':{'f':['g'],'b':['h','i']}}))
+      self.assertTrue(Settings._is_in_dict({'d':'f','a':['b','c']}, {'d':['e','f'],'a':['x','c','g','b','h']}))
+      self.assertTrue(Settings._is_in_dict({'d':'e','a':['b','c']}, {'d':['e','f'],'a':['x','c','g','b','h']}))
+      self.assertFalse(Settings._is_in_dict({'d':'f','a':['b','c']}, {'d':['e','f'],'a':['x','c','g','i','h']}))
+      self.assertTrue(Settings._is_in_dict({'a':{'b':'c','f':'g'},'d':'e'}, {'d':['e'],'a':{'f':['g'],'b':['h','c']}}))
+      self.assertFalse(Settings._is_in_dict({'a':{'b':'c','f':'g'},'d':'e'}, {'d':['e'],'a':{'f':['g'],'b':['h','i']}}))
 
       self.assertTrue(Settings._is_in_dict(
-         {'a': ['b', ['c']]},
+         {'a': ['b', ['c']], 'd': 'f'},
          {'d': ['e', 'f'], 'a': ['x', ['c', 'g'], 'b', 'h']}))
       self.assertFalse(Settings._is_in_dict(
          {'a': ['b', ['c']]},
@@ -50,19 +51,27 @@ class SettingsTest(unittest.TestCase):
       self.assertFalse(Settings._is_in_dict(
          {'a': ['b', ['c']]},
          {'d': ['e', 'f'], 'a': ['x', ['c', 'g', 'i'], 'h']}))
+      self.assertTrue(Settings._is_in_dict(
+         {'a':[{'b':'c'}]},
+         {'a':[{'d','e'},{'b':'c'}]}
+      ))
+      self.assertTrue(Settings._is_in_dict(
+         {'a': {'b':'c'}},
+         {'a': [{'b':'c'}]}
+      ))
 
    def test_list_with_dict(self):
       self.assertTrue(Settings._is_in_list(
          [{'a':'d'}],
          [{'a':['d']}]))
       self.assertTrue(Settings._is_in_list(
-         [{'a':{'c': 'd'}}],
+         [{'a':{'c': 'd', 'h': 'i'}, 'e': 'f'}],
          [{'e':['f'],'a':{'h':['i'],'c':['d']}}]))
       self.assertTrue(Settings._is_in_list(
-         [['y'],[{'f':'g'}]],
+         [['y'],[{'f':'g','j':'k'}]],
          [['y', 'z'],[{'j':['k'],'f':['g']}]]))
       self.assertTrue(Settings._is_in_list(
-         [[[[['b', {'a': {'c': 'd'}}], ['y'], [{'f': 'g'}]]]]],
+         [[[[['b', {'a': {'c':'d','h':'i'}, 'e':'f'}], ['y'], [{'f':'g', 'j':'k'}]]]]],
          [[[[['y', 'z'], [{'e': ['f'], 'a': {'h': ['i'], 'c': ['d']}}, 'a', 'b', 'c'], [{'j': ['k'], 'f': ['g']}]]]]]))
       self.assertFalse(Settings._is_in_list(
          [[[[['f', {'a': {'c': 'd'}}], ['y'], [{'f': 'g'}]]]]],
@@ -130,8 +139,8 @@ class SettingsTest(unittest.TestCase):
       Settings._dict_validity_check({'foo':'foov'},{'foo':['foov']})
       with self.assertRaises(InvalidSettingError):
          Settings._dict_validity_check({'foo':'foov'},{'foo':['foovv']})
-      Settings._dict_validity_check({'foo':{'bar':'barv'}},{'foo':{'baz':['bazv'],'bar':['barvv','barv']}})
-      Settings._dict_validity_check({'foo':{'bar':'barv'}},{'foo':{'baz':['bazv'],'bar':'barv'}})
+      Settings._dict_validity_check({'foo':{'bar':'barvv','baz':'bazv'}},{'foo':{'baz':['bazv'],'bar':['barvv','barv']}})
+      Settings._dict_validity_check({'foo':{'bar':'barv','baz':'bazv'}},{'foo':{'baz':['bazv'],'bar':'barv'}})
       with self.assertRaises(InvalidSettingError):
          Settings._dict_validity_check({'foo':{'bar':'barv'}},{'foo':{'baz':['bazv'],'bar':'barvv'}})
 
@@ -220,41 +229,40 @@ class SettingsTest(unittest.TestCase):
 
       s = Settings({'foo': ['a', 'b']}, {'foo': ['a', 'b', 'c']})
 
-      # # TODO: implement dicts contained in list validation
-      # s = Settings(
-      #    {'foo': [{'bar': 3}, {'baz': 4}]},
-      #    {'foo': [
-      #       {'bar': [4, 3]},
-      #       {'baz': [4, 5]},
-      #       {'mu': [6, 7]}
-      #    ]})
-      #
-      # # TODO implment nested dict validation
-      # s = Settings(
-      #    {'foo': {'bar': 'baz'}},
-      #    {'foo': [
-      #       {'bar': ['mu', 'baz']},
-      #       {'gar': ['gu', 'gaz']}
-      #    ]})
+      s = Settings(
+         {'foo': [{'bar': 3}, {'baz': 4}]},
+         {'foo': [
+            {'bar': [4, 3]},
+            {'baz': [4, 5]},
+            {'mu': [6, 7]}
+         ]})
 
-         # def setUp(self):
-   #    self.settings = Settings({'foo': 1, 'bar': 'barval'},
-   #                             {'foo': [1], 'bar': ['barval']})
-   #    self.empty_settings = Settings({}, {})
-   #    self.same =  Settings({'bar':'barval','foo':1},
-   #             {'foo':[1],'bar':['barval']})
-   #    self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
-   #                         {'fooo': [1], 'bar': ['barval']})
-   #
-   #    with open('foo_settings.json', 'w') as settings:
-   #       json.dump({'foo': 1, 'bar': 'barval'}, settings)
-   #
+      s = Settings(
+         {'foo': {'bar': 'baz'}},
+         {'foo': [{'bar': ['mu', 'baz']}]})
 
-   # def test_defaults(self):
-   #    s = Settings({}, {'foo': [1, 0], 'bar': ['barval', 'barval2']})
-   #    self.assertEqual(s['bar'], 'barval')
-   #    self.assertEqual(s['foo'], 1)
-   #
+   def setUp(self):
+      self.settings = Settings({'foo': 1, 'bar': 'barval'},
+                               {'foo': [1], 'bar': ['barval']})
+      self.empty_settings = Settings({}, {})
+      self.same =  Settings({'bar':'barval','foo':1},
+               {'foo':[1],'bar':['barval']})
+      self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
+                           {'fooo': [1], 'bar': ['barval']})
+
+      with open('foo_settings.json', 'w') as settings:
+         json.dump({'foo': 1, 'bar': 'barval'}, settings)
+
+   def test_defaults(self):
+      s = Settings({}, {'foo':[1,0],'bar':['barval','barval2']}, {'foo':0,'bar':'barval'})
+      self.assertEqual(s['bar'], 'barval')
+      self.assertEqual(s['foo'], 0)
+
+      with self.assertRaises(InvalidSettingError):
+         Settings({}, {'foo':[1,0],'bar':['barval','barval2']}, {'bar':'barval'})
+      # s = Settings({'bar':'barval'}, {'foo':[1,0],'bar':['barval','barval2']})
+
+
    # def test_ctor_with_settings_file(self):
    #    s = Settings('foo_settings.json',
    #                 {'foo':[0, 1], 'bar':['barval', 'barval2']})
