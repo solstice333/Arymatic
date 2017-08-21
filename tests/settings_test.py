@@ -261,18 +261,16 @@ class SettingsTest(unittest.TestCase):
       with open('foo_settings.json', 'w') as settings:
          json.dump({'foo': 1, 'bar': 'barval'}, settings)
 
-   # def test_ctor_with_settings_file(self):
-   #    s = Settings('foo_settings.json',
-   #                 {'foo':[0, 1], 'bar':['barval', 'barval2']})
-   #    with self.assertRaises(InvalidSettingError):
-   #       Settings('foo_settings.json',
-   #                {'foo':[0, 2], 'bar':['barval', 'barval2']})
-   #    with self.assertRaises(InvalidSettingError):
-   #       Settings('foo_settings.json',
-   #                {'foo':[0, 1], 'bar':['barval2', 'barval3']})
-   #
-   #
-   #
+   def test_ctor_with_settings_file(self):
+      s = Settings('foo_settings.json',
+                   {'foo':[0, 1], 'bar':['barval', 'barval2']})
+      with self.assertRaises(InvalidSettingError):
+         Settings('foo_settings.json',
+                  {'foo':[0, 2], 'bar':['barval', 'barval2']})
+      with self.assertRaises(InvalidSettingError):
+         Settings('foo_settings.json',
+                  {'foo':[0, 1], 'bar':['barval2', 'barval3']})
+
    # def test_wildcard(self):
    #    # TODO: implement '*' wildcard with type specifier for instance, '*:str' meaning any string
    #    s = Settings({'foo': 1}, {'foo': '*'})
