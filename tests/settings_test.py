@@ -8,6 +8,18 @@ from tests.mock_restore import MockRestore
 
 class SettingsTest(unittest.TestCase):
 
+   def setUp(self):
+      self.settings = Settings({'foo': 1, 'bar': 'barval'},
+                               {'foo': [1], 'bar': ['barval']})
+      self.empty_settings = Settings({}, {})
+      self.same = Settings({'bar': 'barval', 'foo': 1},
+                           {'foo': [1], 'bar': ['barval']})
+      self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
+                                    {'fooo': [1], 'bar': ['barval']})
+
+      with open('foo_settings.json', 'w') as settings:
+         json.dump({'foo': 1, 'bar': 'barval'}, settings)
+
    def test_is_in_prim(self):
       self.assertTrue(Settings._is_in_prim('z', ['x', 'y', 'z']))
       self.assertTrue(Settings._is_in_prim('x', ['x', 'y', 'z']))
@@ -249,18 +261,6 @@ class SettingsTest(unittest.TestCase):
       s = Settings(
          {'foo': {'bar': 'baz'}},
          {'foo': [{'bar': ['mu', 'baz']}]})
-
-   def setUp(self):
-      self.settings = Settings({'foo': 1, 'bar': 'barval'},
-                               {'foo': [1], 'bar': ['barval']})
-      self.empty_settings = Settings({}, {})
-      self.same =  Settings({'bar':'barval','foo':1},
-               {'foo':[1],'bar':['barval']})
-      self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
-                           {'fooo': [1], 'bar': ['barval']})
-
-      with open('foo_settings.json', 'w') as settings:
-         json.dump({'foo': 1, 'bar': 'barval'}, settings)
 
    def test_ctor_with_settings_file(self):
       s = Settings('foo_settings.json',
