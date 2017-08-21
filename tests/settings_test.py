@@ -17,8 +17,13 @@ class SettingsTest(unittest.TestCase):
       self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
                                     {'fooo': [1], 'bar': ['barval']})
 
-      with open('foo_settings.json', 'w') as settings:
-         json.dump({'foo': 1, 'bar': 'barval'}, settings)
+      while True:
+         try:
+            with open('foo_settings.json', 'w') as settings:
+               json.dump({'foo': 1, 'bar': 'barval'}, settings)
+         except PermissionError:
+            continue
+         break
 
    def test_is_in_prim(self):
       self.assertTrue(Settings._is_in_prim('z', ['x', 'y', 'z']))
@@ -179,7 +184,7 @@ class SettingsTest(unittest.TestCase):
       self.assertTrue(Settings._is_wildcard_match(3.5, '*:float'))
       self.assertFalse(Settings._is_wildcard_match('foo', '*:float'))
 
-      with self.assertRaises(InvalidWildcard):
+      with self.assertRaises(InvalidWildcardError):
          Settings._is_wildcard_match(3.5, '*:foo')
 
       self.assertTrue(Settings._is_in_prim('foo', '*'))
@@ -197,9 +202,9 @@ class SettingsTest(unittest.TestCase):
       self.assertTrue(Settings._is_regex_match('foo', r'F\w:re:I'))
       self.assertFalse(Settings._is_regex_match('foo', r'F\w$:re:I'))
       self.assertTrue(Settings._is_regex_match('foo', r'F\w+:re:I '))
-      with self.assertRaises(InvalidRegex):
+      with self.assertRaises(InvalidRegexError):
          self.assertTrue(Settings._is_regex_match('foo', r'F\w+:re:I Z'))
-      with self.assertRaises(InvalidRegex):
+      with self.assertRaises(InvalidRegexError):
          self.assertTrue(Settings._is_regex_match('foo', r'F\w+:re:i'))
       self.assertFalse(Settings._is_regex_match("f\no", r'...:re'))
       self.assertTrue(Settings._is_regex_match("f\no", r'...:re:S'))

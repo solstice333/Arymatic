@@ -12,6 +12,8 @@ class Settings(Mapping):
 
    @staticmethod
    def _get_type_to_one_of():
+      """return a dict of string types to one of method"""
+
       return {
          'primitive': Settings._is_in_prim,
          'list': Settings._is_sublist_in_one_of_lists,
@@ -20,6 +22,8 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_primitive(val):
+      """return True if |val| is a JSON primitive, False otherwise"""
+
       prims = [int, float, str, bool]
       for prim in prims:
          if isinstance(val, prim):
@@ -28,14 +32,22 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_list(val):
+      """return True if |val| is an instance of list, False otherwise"""
+
       return isinstance(val, list)
 
    @staticmethod
    def _is_dict(val):
+      """return True if |val| is an instance of dict, False otherwise"""
+
       return isinstance(val, dict)
 
    @staticmethod
    def _is_wildcard_match(s, wildcard):
+      """return True if |wildcard| matches |s|. A valid wildcard string
+      is in the format of '*[:<type>]`. For instance, '*', '*:str' are both
+      valid. If |wildcard| is invalid, then an InvalidWildcardError """
+
       wildcard = wildcard.strip()
       glob_pat = re.compile(r'\*(:(?P<type>\w+))?$')
       m = glob_pat.match(wildcard)
@@ -47,10 +59,10 @@ class Settings(Mapping):
             try:
                return isinstance(s, type_to_meth[m.group('type')])
             except KeyError:
-               raise InvalidWildcard("{} is an invalid type in {}".format(
+               raise InvalidWildcardError("{} is an invalid type in {}".format(
                   m.group('type'), wildcard))
          return True
-      raise InvalidWildcard(wildcard)
+      raise InvalidWildcardError(wildcard)
 
    @staticmethod
    def _is_regex_match(s, pat):
@@ -64,7 +76,7 @@ class Settings(Mapping):
             for flag in list(m.group('flag')):
                flags_combined |= char_to_flag[flag]
          return bool(re.search(m.group('pat'), s, flags_combined))
-      raise InvalidRegex(pat)
+      raise InvalidRegexError(pat)
 
    @staticmethod
    def _is_in_prim(v, valid_v):
