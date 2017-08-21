@@ -178,6 +178,7 @@ class SettingsTest(unittest.TestCase):
       Settings._validity_check({'foo':'bar'}, {'foo':'*:str'})
       with self.assertRaises(InvalidSettingError):
          Settings._validity_check({'foo':'bar'}, {'foo':'*:bool'})
+      Settings._validity_check({'foo':'bar'}, {'foo':['*:int','*:str']})
 
    def test_is_regex_match(self):
       self.assertTrue(Settings._is_regex_match('foo', r'\w+:re'))
@@ -271,81 +272,64 @@ class SettingsTest(unittest.TestCase):
          Settings('foo_settings.json',
                   {'foo':[0, 1], 'bar':['barval2', 'barval3']})
 
-   # def test_wildcard(self):
-   #    # TODO: implement '*' wildcard with type specifier for instance, '*:str' meaning any string
-   #    s = Settings({'foo': 1}, {'foo': '*'})
-   #    s = Settings({'foo': 'val'}, {'foo': '*:str'})
-   #    s = Settings({'foo': 'val'}, {'foo': '*:int,str'})
-   #    s = Settings({'foo': 2.4}, {'foo': '*:float'})
-   #    s = Settings({'foo': True}, {'foo': '*:bool'})
-   #
-   #    with self.assertRaises(InvalidSettingError):
-   #       s = Settings({'foo': 'val'}, {'foo': '*:int'})
-   #    with self.assertRaises(InvalidSettingError):
-   #       s = Settings({'foo': 'val'}, {'foo': '*:bool'})
-   #    with self.assertRaises(InvalidSettingError):
-   #       s = Settings({'foo': 'val'}, {'foo': '*:float'})
-   #    with self.assertRaises(InvalidSettingError):
-   #       s = Settings({'foo': True}, {'foo': '*:str'})
-   #
-   # def test_getitem(self):
-   #    s = self.settings
-   #    self.assertEqual(s['foo'], 1)
-   #    self.assertEqual(s['bar'], 'barval')
-   #    with self.assertRaises(KeyError):
-   #       s['baz']
-   #
-   # def test_iter(self):
-   #    s = self.settings
-   #    self.assertEqual(sorted(list(iter(s))), ['bar', 'foo'])
-   #    s = self.empty_settings
-   #    self.assertEqual(list(iter(s)), [])
-   #
-   # def test_len(self):
-   #    s = self.settings
-   #    self.assertEqual(len(s), 2)
-   #    s = self.empty_settings
-   #    self.assertEqual(len(s), 0)
-   #
-   # def test_contains(self):
-   #    s = self.settings
-   #    self.assertTrue('foo' in s)
-   #    self.assertTrue('bar' in s)
-   #    self.assertFalse('baz' in s)
-   #    s = self.empty_settings
-   #    self.assertFalse('foo' in s)
-   #
-   # def test_keys(self):
-   #    s = self.settings
-   #    self.assertEqual(sorted(s.keys()), ['bar', 'foo'])
-   #    s = self.empty_settings
-   #    self.assertEqual(list(s.keys()), [])
-   #
-   # def test_values(self):
-   #    s = self.settings
-   #    self.assertEqual(sorted([str(v) for v in s.values()]), ['1', 'barval'])
-   #    self.assertTrue(1 in s.values())
-   #    self.assertTrue('barval' in s.values())
-   #
-   # def test_get(self):
-   #    s = self.settings
-   #    self.assertEqual(s.get('foo'), 1)
-   #    self.assertEqual(s.get('bar'), 'barval')
-   #    self.assertIsNone(s.get('baz'))
-   #    self.assertEqual(s.get('baz', 0), 0)
-   #    s = self.empty_settings
-   #    self.assertIsNone(s.get('foo'))
-   #
-   # def test_eq(self):
-   #    s = self.settings
-   #    s2 = self.same
-   #    self.assertEqual(s, s2)
-   #    self.assertIsNot(s, s2)
-   #
-   # def test_ne(self):
-   #    s = self.settings
-   #    self.assertNotEqual(s, self.slightly_diff)
-   #    self.assertNotEqual(s, self.empty_settings)
-   #
-   # def tearDown(self):
-   #    os.remove('foo_settings.json')
+   def test_getitem(self):
+      s = self.settings
+      self.assertEqual(s['foo'], 1)
+      self.assertEqual(s['bar'], 'barval')
+      with self.assertRaises(KeyError):
+         s['baz']
+
+   def test_iter(self):
+      s = self.settings
+      self.assertEqual(sorted(list(iter(s))), ['bar', 'foo'])
+      s = self.empty_settings
+      self.assertEqual(list(iter(s)), [])
+
+   def test_len(self):
+      s = self.settings
+      self.assertEqual(len(s), 2)
+      s = self.empty_settings
+      self.assertEqual(len(s), 0)
+
+   def test_contains(self):
+      s = self.settings
+      self.assertTrue('foo' in s)
+      self.assertTrue('bar' in s)
+      self.assertFalse('baz' in s)
+      s = self.empty_settings
+      self.assertFalse('foo' in s)
+
+   def test_keys(self):
+      s = self.settings
+      self.assertEqual(sorted(s.keys()), ['bar', 'foo'])
+      s = self.empty_settings
+      self.assertEqual(list(s.keys()), [])
+
+   def test_values(self):
+      s = self.settings
+      self.assertEqual(sorted([str(v) for v in s.values()]), ['1', 'barval'])
+      self.assertTrue(1 in s.values())
+      self.assertTrue('barval' in s.values())
+
+   def test_get(self):
+      s = self.settings
+      self.assertEqual(s.get('foo'), 1)
+      self.assertEqual(s.get('bar'), 'barval')
+      self.assertIsNone(s.get('baz'))
+      self.assertEqual(s.get('baz', 0), 0)
+      s = self.empty_settings
+      self.assertIsNone(s.get('foo'))
+
+   def test_eq(self):
+      s = self.settings
+      s2 = self.same
+      self.assertEqual(s, s2)
+      self.assertIsNot(s, s2)
+
+   def test_ne(self):
+      s = self.settings
+      self.assertNotEqual(s, self.slightly_diff)
+      self.assertNotEqual(s, self.empty_settings)
+
+   def tearDown(self):
+      os.remove('foo_settings.json')
