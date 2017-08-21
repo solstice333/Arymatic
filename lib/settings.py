@@ -11,7 +11,7 @@ class Settings(Mapping):
    _REPAT = r'(?P<pat>.*?):re(:(?P<flag>[AILMSX]+))?$'
 
    @staticmethod
-   def get_type_to_one_of():
+   def _get_type_to_one_of():
       return {
          'primitive': Settings._is_in_prim,
          'list': Settings._is_sublist_in_one_of_lists,
@@ -85,7 +85,7 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_sublist_in_one_of_lists(sublist, lists):
-      type_to_one_of = Settings.get_type_to_one_of()
+      type_to_one_of = Settings._get_type_to_one_of()
 
       for vl in lists:
          next_vl = False
