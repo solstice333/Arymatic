@@ -119,6 +119,14 @@ class SettingsTest(unittest.TestCase):
          {'foo':{'bar':'barv','baz':'bazv'}}
       )
 
+      s = Settings({}, {'foo': [1, 0], 'bar': ['barval', 'barval2']}, {'foo': 0, 'bar': 'barval'})
+      self.assertEqual(s['bar'], 'barval')
+      self.assertEqual(s['foo'], 0)
+
+      with self.assertRaises(InvalidSettingError):
+         Settings({}, {'foo': [1, 0], 'bar': ['barval', 'barval2']}, {'bar': 'barval'})
+      s = Settings({'bar': 'barval', 'foo': 1}, {'foo': [1, 0], 'bar': ['barval', 'barval2']}, {'bar': 2})
+
    def test_primitive_validity(self):
       Settings._primitive_validity_check('x', ['x','y','z'])
       Settings._primitive_validity_check('z', ['x','y','z'])
@@ -252,16 +260,6 @@ class SettingsTest(unittest.TestCase):
 
       with open('foo_settings.json', 'w') as settings:
          json.dump({'foo': 1, 'bar': 'barval'}, settings)
-
-   def test_defaults(self):
-      s = Settings({}, {'foo':[1,0],'bar':['barval','barval2']}, {'foo':0,'bar':'barval'})
-      self.assertEqual(s['bar'], 'barval')
-      self.assertEqual(s['foo'], 0)
-
-      with self.assertRaises(InvalidSettingError):
-         Settings({}, {'foo':[1,0],'bar':['barval','barval2']}, {'bar':'barval'})
-      # s = Settings({'bar':'barval'}, {'foo':[1,0],'bar':['barval','barval2']})
-
 
    # def test_ctor_with_settings_file(self):
    #    s = Settings('foo_settings.json',
