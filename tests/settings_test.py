@@ -1,12 +1,30 @@
-import unittest
 from lib.settings import Settings
 from lib.custom_exceptions import *
+
+import unittest
 import json
 import os
-from unittest.mock import MagicMock
-from tests.mock_restore import MockRestore
+import time
+
 
 class SettingsTest(unittest.TestCase):
+
+   def keep_fkn_trying(self, callback, max_attempts=10, interval_sec=1):
+      attempts = 0
+      while attempts < max_attempts:
+         try:
+            callback()
+         except PermissionError:
+            time.sleep(interval_sec)
+            continue
+         break
+
+   def create_foo_settings_json(self):
+      with open('foo_settings.json', 'w') as settings:
+         json.dump({'foo': 1, 'bar': 'barval'}, settings)
+
+   def rm_foo_settings_json(self):
+      os.remove('foo_settings.json')
 
    def setUp(self):
       self.settings = Settings({'foo': 1, 'bar': 'barval'},
@@ -16,14 +34,7 @@ class SettingsTest(unittest.TestCase):
                            {'foo': [1], 'bar': ['barval']})
       self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
                                     {'fooo': [1], 'bar': ['barval']})
-
-      while True:
-         try:
-            with open('foo_settings.json', 'w') as settings:
-               json.dump({'foo': 1, 'bar': 'barval'}, settings)
-         except PermissionError:
-            continue
-         break
+      self.keep_fkn_trying(self.create_foo_settings_json)
 
    def test_is_in_prim(self):
       self.assertTrue(Settings._is_in_prim('z', ['x', 'y', 'z']))
@@ -237,25 +248,42 @@ class SettingsTest(unittest.TestCase):
          Settings._validity_check({'foo':False},{'foo':[r'True:re']})
 
    def test_ctor(self):
-      s = Settings({'foo': 0}, {'foo': [0, 1]})
-      s = Settings({'foo': 1}, {'foo': [0, 1]})
-      s = Settings({'foo': 0, 'bar': 'barval'},
+      Settings({'foo': 0}, {'foo': [0, 1]})
+      Settings({'foo': 1}, {'foo': [0, 1]})
+      Settings({'foo': 0, 'bar': 'barval'},
                    {'foo': [0, 1], 'bar': ['barval', 'barval2']})
-      s = Settings({'foo': 0, 'bar': 'barval2'},
+      Settings({'foo': 0, 'bar': 'barval2'},
                    {'foo': [0, 1], 'bar': ['barval', 'barval2']})
 
       with self.assertRaises(InvalidSettingError):
-         s = Settings({'foo': 1}, {'foo': [0, 2]})
+         Settings({'foo': 1}, {'foo': [0, 2]})
       with self.assertRaises(InvalidSettingError):
-         s = Settings({'foo': 0, 'bar': 'barval'},
+         Settings({'foo': 0, 'bar': 'barval'},
                       {'foo': [0, 1], 'bar': ['barval1', 'barval2']})
 
       with self.assertRaises(InvalidSettingError):
-         s = Settings({'foo': 0, 'bar': 'barr'}, {'foo': [1, 0], 'bar': []})
+         Settings({'foo': 0, 'bar': 'barr'}, {'foo': [1, 0], 'bar': []})
 
-      s = Settings({'foo': ['a', 'b']}, {'foo': ['a', 'b', 'c']})
+      Settings({'foo':['a','b']}, {'foo':['a','b','c','d']})
+      Settings({'foo':[['a','b']]}, {'foo':[['c','d'],['b','a']]})
+      Settings({'foo':[['a']]}, {'foo':[['c','d'],['a','b']]})
+      Settings({'foo':[['b']]}, {'foo':[['c','d'],['a','b']]})
+      Settings({'foo':[['b'], ['a']]}, {'foo':[['c','d'],['a','b']]})
+      Settings({'foo':[['b'], ['d']]}, {'foo':[['c','d'],['a','b']]})
+      Settings({'foo':[['b'], []]}, {'foo':[['c','d'],['a','b']]})
 
-      s = Settings(
+      Settings({'foo':{'bar':'a'}}, {'foo':{'bar':['b','a']}})
+      Settings({'foo':{'bar':'a'}}, {'foo':[{'baz':['c','d']},{'bar':['b','a']}]})
+
+      with self.assertRaises(InvalidSettingError):
+         Settings({'foo':{'bar':'a'}}, {'foo':[{'baz':['c','d']},{'bar':['b','a'],'mu':['e','f']}]})
+      Settings({'foo':{'bar':'a','mu':'e'}}, {'foo':[{'baz':['c','d']},{'bar':['b','a'],'mu':['e','f']}]})
+      Settings({'foo':{'baz':'d'}}, {'foo':[{'baz':['c','d']},{'bar':['b','a'],'mu':['e','f']}]})
+
+      with self.assertRaises(InvalidSettingError):
+         Settings({'foo':[['b','d']]}, {'foo':[['c','d'],['b','a']]})
+
+      Settings(
          {'foo': [{'bar': 3}, {'baz': 4}]},
          {'foo': [
             {'bar': [4, 3]},
@@ -263,7 +291,7 @@ class SettingsTest(unittest.TestCase):
             {'mu': [6, 7]}
          ]})
 
-      s = Settings(
+      Settings(
          {'foo': {'bar': 'baz'}},
          {'foo': [{'bar': ['mu', 'baz']}]})
 
@@ -337,4 +365,4 @@ class SettingsTest(unittest.TestCase):
       self.assertNotEqual(s, self.empty_settings)
 
    def tearDown(self):
-      os.remove('foo_settings.json')
+      self.keep_fkn_trying(self.rm_foo_settings_json)

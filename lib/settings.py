@@ -44,9 +44,12 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_wildcard_match(s, wildcard):
-      """return True if |wildcard| matches |s|. A valid wildcard string
-      is in the format of '*[:<type>]`. For instance, '*', '*:str' are both
-      valid. If |wildcard| is invalid, then an InvalidWildcardError """
+      """return True if |wildcard| string matches |s| string. A valid wildcard
+      string is in the format of '*[:<type>]`. For instance, '*', '*:str' are
+      both valid. Any leading or trailing whitespace in |wildcard| is
+      automatically removed. If |wildcard| is invalid, then an
+      InvalidWildcardError is raised
+      """
 
       wildcard = wildcard.strip()
       glob_pat = re.compile(r'\*(:(?P<type>\w+))?$')
@@ -66,6 +69,15 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_regex_match(s, pat):
+      """return True if regex pattern string |pat| matches string |s|. A valid
+      wildcard string is in the format of '<regex pat>:re[:<flag>[<flag>...]]'.
+      For instance, r'\d+:re' or r'h[i]:re:I' are valid. Flags can be stacked
+      and valid flags are the same as the single character flags that the
+      Python re module uses, i.e. AILMSX. For instance, r'h.i:re:IS' would be
+      valid. Trailing whitespace is stripped. If a regex pattern is invalid,
+      and InvalidRegexError is raised.
+      """
+
       pat = pat.rstrip()
       m = re.search(Settings._REPAT, pat)
       if m:
@@ -80,6 +92,13 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_in_prim(v, valid_v):
+      """return True if |v| is in |valid_v|. |v| should be a primitive of
+      either int, float, str, or bool. |valid_v| should be a list of any
+      possible legal primitive, wildcard, or regex values. |valid_v| can also
+      be a single primitive value, which will implicitly be converted to a list
+      containing one element. Return False otherwise.
+      """
+
       if not isinstance(valid_v, list):
          valid_v = [valid_v]
 
@@ -97,6 +116,13 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_sublist_in_one_of_lists(sublist, lists):
+      """return True if every element in list |sublist| is in one of the lists
+      contained in |lists|, False otherwise. Legal elements in |sublist| or the
+      lists in |lists| are any primitive (int, float, str, bool), list, or
+      dict. If an illegal element exists in |sublist|, an InvalidSettingError
+      is raised
+      """
+
       type_to_one_of = Settings._get_type_to_one_of()
 
       for vl in lists:
@@ -124,6 +150,12 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_dict_in_one_of_dicts(d, dicts):
+      """return True if dict |d| is in one of the dicts in |dicts|, False
+      otherwise. |dicts| is obviously just a list of dictionaries. Legal
+      elements in the dictionaries are the typical primitives (int, float,
+      bool, str), lists, and dicts.
+      """
+
       for vd in dicts:
          if Settings._is_in_dict(d, vd):
             return True
@@ -131,6 +163,11 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_in_list(l, valid_l):
+      """return True if all elements in list |l| is in one of the lists
+      contained in |valid_l|, False otherwise. Legal elements in the lists are
+      the typical primitives (int, float, bool, str), lists, and dicts.
+      """
+
       for elem in l:
          if Settings._is_primitive(elem):
             if not Settings._is_in_prim(elem, valid_l):
@@ -149,6 +186,10 @@ class Settings(Mapping):
 
    @staticmethod
    def _has_all_keys_from(d, valid_d):
+      """return True if dict |d| has all keys in dict |valid_d|. False
+      otherwise.
+      """
+
       for k, v in valid_d.items():
          if k not in d:
             return False
@@ -156,6 +197,13 @@ class Settings(Mapping):
 
    @staticmethod
    def _is_in_dict(d, valid_d):
+      """return True if all dict |d| keys are in dict |valid_d|, values in |d|
+      are legal values with respect to the valid values defined in |valid_d|,
+      and all |valid_d| keys are in |d|. Values in |d| are
+      determined legal based on Settings._is_in_prim(), Settings._is_list(), or
+      recursively Settings._is_in_dict(). False otherwise.
+      """
+
       for k, v in d.items():
          if k not in valid_d:
             return False
@@ -181,16 +229,30 @@ class Settings(Mapping):
 
    @staticmethod
    def _primitive_validity_check(v, valid_v):
+      """raise InvalidSettingError if primitive (int, float, bool, str) value
+      |v| is not in list |valid_v|
+      """
+
       if not Settings._is_in_prim(v, valid_v):
          raise InvalidSettingError()
 
    @staticmethod
    def _list_validity_check(l, valid_l):
+      """raise InvalidSettingError if list |l| is not in list |valid_l| where
+      \"in\" semantics are aligned with Settings._is_in_list(), so see the doc
+      for that
+      """
+
       if not Settings._is_in_list(l, valid_l):
          raise InvalidSettingError()
 
    @staticmethod
    def _dict_validity_check(d, valid_d):
+      """raise InvalidSettingError if dict |d| is not in dict |valid_d| where
+      \"in\" semantics are aligned with Settings._is_in_dict(), so see the doc
+      for that
+      """
+
       if not Settings._is_in_dict(d, valid_d):
          raise InvalidSettingError()
 
@@ -232,15 +294,48 @@ class Settings(Mapping):
 
    def __init__(self, settings, valid, defaults=None):
       """create a Settings object. |settings| can be a dict or path to json
-      file. |valid| must be a dict. |settings| represents the user settings
-      where each pair is a setting name associated to a chosen setting value.
-      |valid| represents all valid user settings where each pair is a setting
-      name associated to a list of possible valid setting values. The first
-      element in the list is considered the default value for that setting
-      if that setting is not defined in |settings|. An empty list
-      will raise a NoOptsError, and a setting value in |settings| that
-      does not exist in the associated valid values list will raise an
-      InvalidSettingError.
+      file. If a dict, then values in |settings| must be a primitive
+      (int, float, bool, str), list, or dict. |valid| must be a dict.
+      |settings| represents the user settings where each pair is a setting
+      name associated to a chosen setting value. |valid| represents all valid
+      user settings where each pair is a setting name associated to possible
+      legal setting values. Here's some examples,
+
+      # value associated to 'foo' must be either 'b' or 'a'
+      Settings({'foo':'b'}, {'foo':['b','a']}
+
+      # value associated to 'foo' can be a list of either 'a','b','c', and/or 'd'
+      Settings({'foo':['a','b']}, {'foo':[['c', 'b', 'd', 'a']]}
+
+      # value associated to 'foo' can be a list of either 'a','b','c', and/or 'd'
+      Settings({'foo':['a','b']}, {'foo':[['c', 'b', 'd', 'a']]}
+
+      # value associated to 'foo' can be a list of lists where each nested
+      # list can be one or more combinations of
+      # ['a'], ['b'], ['c'], ['d'], ['c', 'd'], ['b', 'a']
+      # where order doesn't matter. In other words, each user sublist must
+      # contain 0 or more elements from any individual valid sublist.
+      # A sublist cannot contain a mix of items from two or more valid
+      # sublists.
+      Settings({'foo':[['a','b']]}, {'foo':[['c', 'd'], ['b', 'a']]}
+
+      # Associating to the example above, this would raise an InvalidSettingError
+      Settings({'foo':[['b','d']]}, {'foo':[['c', 'd'], ['b', 'a']]}
+
+      # value associated to 'foo' must have a valid nested dict where 'bar'
+      # is the only key accepting values of 'b' or 'a'
+      Settings({'foo':{'bar':'a'}}, {'foo':{'bar':['b','a']}})
+
+      # value associated to 'foo' must be one of the valid nested dicts
+      Settings({'foo':{'bar':'a'}}, {'foo':[{'baz':['c','d']},{'bar':['b','a']}]})
+      Settings({'foo':{'bar':'a','mu':'e'}}, {'foo':[{'baz':['c','d']},{'bar':['b','a'],'mu':['e','f']}]})
+      Settings({'foo':{'baz':'d'}}, {'foo':[{'baz':['c','d']},{'bar':['b','a'],'mu':['e','f']}]})
+
+      Finally, the |defaults| dictionary is optional, and specifies any
+      default values for any key in the user settings that's nonexistent
+      or has an associating value of None. The entries in |defaults| are
+      injected into |settings| before the validity check is done. If the
+      validity check fails, an InvalidSettingError is raised.
       """
 
       try:
