@@ -4,20 +4,10 @@ from lib.custom_exceptions import *
 import unittest
 import json
 import os
-import time
+import tests.test_helpers as testhelp
 
 
 class SettingsTest(unittest.TestCase):
-
-   def keep_fkn_trying(self, callback, max_attempts=10, interval_sec=1):
-      attempts = 0
-      while attempts < max_attempts:
-         try:
-            callback()
-         except PermissionError:
-            time.sleep(interval_sec)
-            continue
-         break
 
    def create_foo_settings_json(self):
       with open('foo_settings.json', 'w') as settings:
@@ -34,7 +24,7 @@ class SettingsTest(unittest.TestCase):
                            {'foo': [1], 'bar': ['barval']})
       self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
                                     {'fooo': [1], 'bar': ['barval']})
-      self.keep_fkn_trying(self.create_foo_settings_json)
+      testhelp.keep_fkn_trying(self.create_foo_settings_json)
 
    def test_is_in_prim(self):
       self.assertTrue(Settings._is_in_prim('z', ['x', 'y', 'z']))
@@ -365,4 +355,4 @@ class SettingsTest(unittest.TestCase):
       self.assertNotEqual(s, self.empty_settings)
 
    def tearDown(self):
-      self.keep_fkn_trying(self.rm_foo_settings_json)
+      testhelp.keep_fkn_trying(self.rm_foo_settings_json)

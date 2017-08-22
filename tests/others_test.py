@@ -1,7 +1,7 @@
 import unittest
 from lib.others import Others
 from unittest.mock import MagicMock
-from tests.mock_restore import MockRestore
+from tests.test_helpers import MockRestore
 import os
 
 
