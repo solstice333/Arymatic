@@ -8,7 +8,7 @@ class Sched:
       settings_filename, taskname, path_to_exec, starttime, schedule):
       settings = {
          'name': taskname,
-         'path_to_executable': path_to_exec,
+         'path_to_exec': path_to_exec,
          'starttime': starttime,
          'schedule': schedule
       }
@@ -16,10 +16,10 @@ class Sched:
          json.dump(settings, sched_settings, indent=4)
 
    def __init__(self, settings_file):
-      settings = Settings(settings_file,
+      self._settings = Settings(settings_file,
                           {
                              'name': '*:str',
-                             'path_to_executable': '*:str', # relative from arymatic
+                             'path_to_exec': '*:str',
                              'starttime': r'\d{2}:\d{2}:re',
                              'schedule': ['once', 'minute']
                           })
