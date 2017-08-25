@@ -1,4 +1,4 @@
-import time
+import lib.helpers as dammit
 
 class MockRestore():
    """Simple way for mocking and restoring back to init"""
@@ -29,12 +29,6 @@ class MockRestore():
 
       setattr(self._obj, self._meth, self._saved)
 
-def keep_fkn_trying(callback, max_attempts=10, interval_sec=1):
-   attempts = 0
-   while attempts < max_attempts:
-      try:
-         callback()
-      except PermissionError:
-         time.sleep(interval_sec)
-         continue
-      break
+def keep_fkn_trying(
+   callback, args=None, kwargs=None, max_attempts=10, interval_sec=1):
+   dammit.keep_fkn_trying(callback, args, kwargs, max_attempts, interval_sec)

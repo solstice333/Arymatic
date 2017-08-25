@@ -4,7 +4,7 @@ from lib.custom_exceptions import *
 import unittest
 import json
 import os
-import tests.test_helpers as testhelp
+import tests.test_helpers as dammit
 
 
 class SettingsTest(unittest.TestCase):
@@ -24,7 +24,7 @@ class SettingsTest(unittest.TestCase):
                            {'foo': [1], 'bar': ['barval']})
       self.slightly_diff = Settings({'bar': 'barval', 'fooo': 1},
                                     {'fooo': [1], 'bar': ['barval']})
-      testhelp.keep_fkn_trying(self.create_foo_settings_json)
+      dammit.keep_fkn_trying(self.create_foo_settings_json)
 
    def test_is_in_prim(self):
       self.assertTrue(Settings._is_in_prim('z', ['x', 'y', 'z']))
@@ -355,4 +355,4 @@ class SettingsTest(unittest.TestCase):
       self.assertNotEqual(s, self.empty_settings)
 
    def tearDown(self):
-      testhelp.keep_fkn_trying(self.rm_foo_settings_json)
+      dammit.keep_fkn_trying(self.rm_foo_settings_json)
