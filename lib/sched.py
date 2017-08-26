@@ -82,33 +82,34 @@ class Sched:
       raise NotYetImplemented()
 
    def __init__(self, settings_file, batcave):
-      self._settings = Settings(settings_file,
-                          valid={
-                             'name': '*:str',
-                             'run_cmd': '*:str',
-                             'working_dir': '*:str',
-                             'start_min': '*:bool',
-                             'start_time': r'\d{2}:\d{2}:re',
-                             'schedule': ['once', 'minute'],
-                             'days': ['MON','TUE','WED','THU',
-                                      'FRI','SAT','SUN'],
-                             'months': ['JAN','FEB','MAR','APR','MAY','JUN',
-                                        'JUL','AUG','SEP','OCT','NOV','DEC'],
-                             'modifier': ['*:int',
-                                          'FIRST', 'SECOND', 'THIRD', 'FOURTH',
-                                          'LAST', 'LASTDAY', ''],
-                             'start_date': [r'\d{2}\\\d{2}\\\d{4}:re', ''],
-                             'end_date': [r'\d{2}\\\d{2}\\\d{4}:re', '']
-                          },
-                          defaults={
-                             'working_dir': '.',
-                             'start_min': True,
-                             'days': [],
-                             'months': [],
-                             'modifier': '',
-                             'start_date': '',
-                             'end_date': ''
-                          })
+      self._settings = Settings(
+         settings_file,
+         valid={
+            'name': '*:str',
+            'run_cmd': '*:str',
+            'working_dir': '*:str',
+            'start_min': '*:bool',
+            'start_time': r'\d{2}:\d{2}:re',
+            'schedule': ['once', 'minute'],
+            'days': ['MON', 'TUE', 'WED', 'THU',
+                     'FRI', 'SAT', 'SUN'],
+            'months': ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                       'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+            'modifier': ['*:int',
+                         'FIRST', 'SECOND', 'THIRD', 'FOURTH',
+                         'LAST', 'LASTDAY', ''],
+            'start_date': [r'\d{2}\\\d{2}\\\d{4}:re', ''],
+            'end_date': [r'\d{2}\\\d{2}\\\d{4}:re', '']
+         },
+         defaults={
+            'working_dir': '.',
+            'start_min': True,
+            'days': [],
+            'months': [],
+            'modifier': '',
+            'start_date': '',
+            'end_date': ''
+         })
       if not os.path.isdir(batcave):
          dammit.keep_fkn_trying(self._create_batcave, [batcave])
       self._batcave = batcave
