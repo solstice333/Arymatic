@@ -169,6 +169,8 @@ class SettingsTest(unittest.TestCase):
       Settings._dict_validity_check({'foo':{'bar':'barv','baz':'bazv'}},{'foo':{'baz':['bazv'],'bar':'barv'}})
       with self.assertRaises(InvalidSettingError):
          Settings._dict_validity_check({'foo':{'bar':'barv'}},{'foo':{'baz':['bazv'],'bar':'barvv'}})
+      with self.assertRaises(InvalidSettingError):
+         Settings._dict_validity_check({'a':''}, {'a':['b']})
 
    def test_wildcard_validity(self):
       self.assertTrue(Settings._is_wildcard_match('foo', '*'))

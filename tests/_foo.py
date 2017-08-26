@@ -1,8 +1,14 @@
-import time
-import os
+import os.path
 
-print("running out of {}".format(os.getcwd()))
-for s in range(0, 5):
-   time.sleep(1)
-   print(s + 1)
-exit(2)
+def get_filename(basename):
+   new_filename = basename
+   cnt = 0
+   while os.path.isfile(new_filename):
+      cnt += 1
+      parts = list(os.path.splitext(basename))
+      parts.insert(1, str(cnt))
+      new_filename = ''.join(parts)
+   return new_filename
+
+with open(get_filename('_foo.txt'), 'w') as output:
+   output.write("running out of {}".format(os.getcwd()))
