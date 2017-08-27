@@ -228,7 +228,7 @@ class SchedTest(unittest.TestCase):
       top_lv_tasks = Sched._query_tasks()
 
       for tname, t in top_lv_tasks.items():
-         self.assertTrue(tname.find('\\') == -1)
+         self.assertTrue('\\' not in tname)
          self.assertEqual(len(t._fields), 28)
          self.assertTrue('host_name' in t._fields)
          self.assertTrue('task_name' in t._fields)
@@ -263,7 +263,7 @@ class SchedTest(unittest.TestCase):
       top_lv_tasks = Sched._query_tasks(False)
 
       for tname, t in top_lv_tasks.items():
-         self.assertTrue(tname.find('\\') == -1)
+         self.assertTrue('\\' not in tname)
          self.assertEqual(len(t._fields), 28)
          self.assertTrue('host_name' in t._fields)
          self.assertTrue('task_name' in t._fields)
