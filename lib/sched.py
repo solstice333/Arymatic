@@ -91,6 +91,8 @@ class Sched:
          if re.search(r'cannot.*find.*file.*specified', cpe.output, re.I) and \
             cpe.returncode == 1:
             return False
+         else:
+            raise cpe
       return True
 
    def _create_task(self, batpath):
@@ -145,6 +147,8 @@ class Sched:
          if re.search(r'cannot.*find.*file.*specified', cpe.output, re.I) and \
             cpe.returncode == 1:
             return ()
+         else:
+            raise cpe
 
    @staticmethod
    def is_task_scheduled(taskname):
