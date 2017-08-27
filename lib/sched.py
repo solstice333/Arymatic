@@ -1,5 +1,4 @@
 from lib.settings import Settings
-from lib.custom_exceptions import *
 from collections import namedtuple
 
 import json
@@ -8,6 +7,7 @@ import subprocess
 import lib.helpers as dammit
 import re
 import csv
+
 
 class Sched:
    @staticmethod
@@ -45,10 +45,6 @@ class Sched:
       return s.lower()
 
    @staticmethod
-   def _query_task(taskname):
-      raise NotYetImplemented()
-
-   @staticmethod
    def _filter_out_headers(headers_csv, tasks_csv):
       return [t for t in tasks_csv if t != headers_csv]
 
@@ -81,17 +77,29 @@ class Sched:
       return Sched._create_task_dict_from(tasks)
 
    @staticmethod
-   def _query_tasks(top_lv_only=True):
-      tasks = Sched._schtasks('/query', '/fo csv', '/v')
+   def _query_tasks_dict(taskname=None, top_lv_only=True):
+      tasks = Sched._schtasks(
+         '/query', '/fo csv', '/v', "/tn {}".format(taskname) if taskname else '')
       tasks = Sched._format_tasks_to_dict(tasks, top_lv_only)
       return tasks
+
+   @staticmethod
+   def _delete_task(taskname):
+      try:
+         Sched._schtasks('/delete', "/tn {}".format(taskname), '/f')
+      except subprocess.CalledProcessError as cpe:
+         if re.search(r'cannot.*find.*file.*specified', cpe.output, re.I) and \
+            cpe.returncode == 1:
+            return False
+      return True
 
    def _create_task(self, batpath):
       Sched._schtasks(
          '/create', '/f',
-         '/tr', "\"{}\"".format(batpath),
-         '/st', self._settings['start_time'],
-         '/sc', self._settings['schedule'],
+         "/tr \"{}\"".format(batpath),
+         "/st {}".format(self._settings['start_time'])
+            if self._settings['start_time'] else '',
+         "/sc {}".format(self._settings['schedule']),
          "/mo {}".format(self._settings['modifier'])
             if self._settings['schedule'].lower() in
                ['minute', 'hourly', 'daily', 'weekly', 'monthly'] and
@@ -113,7 +121,7 @@ class Sched:
             if self._settings['schedule'].lower() in
                ['minute', 'hourly', 'daily', 'weekly', 'monthly'] and
                self._settings['end_date'] else '',
-         '/tn', self._settings['name'])
+         "/tn {}".format(self._settings['name']))
 
    def _create_bat(self):
       batpath = os.path.realpath(
@@ -129,10 +137,24 @@ class Sched:
             start_min, self._settings['run_cmd']).strip() + "\n")
       return batpath
 
-   def _delete_task(self, taskname):
-      raise NotYetImplemented()
+   @staticmethod
+   def query_tasks_for(taskname):
+      try:
+         return Sched._query_tasks_dict(taskname)[taskname]
+      except subprocess.CalledProcessError as cpe:
+         if re.search(r'cannot.*find.*file.*specified', cpe.output, re.I) and \
+            cpe.returncode == 1:
+            return ()
 
-   def __init__(self, settings_file, batcave):
+   @staticmethod
+   def is_task_scheduled(taskname):
+      return bool(Sched.query_tasks_for(taskname))
+
+   @staticmethod
+   def deschedule_task_with_taskname(taskname):
+      return Sched._delete_task(taskname)
+
+   def __init__(self, settings_file, batcave='batcave'):
       self._settings = Settings(
          settings_file,
          valid={
@@ -140,8 +162,9 @@ class Sched:
             'run_cmd': '*:str',
             'working_dir': '*:str',
             'start_min': '*:bool',
-            'start_time': r'\d{2}:\d{2}:re',
-            'schedule': ['once', 'minute'],
+            'start_time': [r'\d{2}:\d{2}:re', ''],
+            'schedule': ['once', 'minute', 'hourly', 'daily',
+                         'weekly', 'monthly', 'onstart', 'onlogon', 'onidle'],
             'days': ['MON', 'TUE', 'WED', 'THU',
                      'FRI', 'SAT', 'SUN'],
             'months': ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
@@ -155,6 +178,7 @@ class Sched:
          defaults={
             'working_dir': '.',
             'start_min': True,
+            'start_time': '',
             'days': [],
             'months': [],
             'modifier': '',
@@ -169,4 +193,11 @@ class Sched:
       self._create_task(self._create_bat())
 
    def deschedule_task(self):
-      self._delete_task(self._settings['name'])
+      return Sched.deschedule_task_with_taskname(self._settings['name'])
+
+   def query_task(self):
+      return Sched.query_tasks_for(self._settings['name'])
+
+   def is_scheduled(self):
+      return Sched.is_task_scheduled(self._settings['name'])
+
