@@ -1,10 +1,13 @@
 from lib.settings import Settings
 from lib.custom_exceptions import *
+from collections import namedtuple
 
 import json
 import os
 import subprocess
 import lib.helpers as dammit
+import re
+import csv
 
 class Sched:
    @staticmethod
@@ -26,28 +29,65 @@ class Sched:
    def _create_batcave(batcave):
       os.makedirs(batcave)
 
-   def _create_bat(self):
-      batpath = os.path.realpath(
-         "{}\\{}.bat".format(self._batcave, self._settings['name']))
-      with open(batpath, 'w') as batman:
-         batman.write("@echo off\n")
-         working_dir = '%~dp0' \
-            if self._settings['working_dir'].strip() == '.' \
-            else self._settings['working_dir']
-         batman.write("cd /d {}\n".format(working_dir))
-         start_min = 'start /min' if self._settings['start_min'] else ''
-         batman.write("{} {}".format(
-            start_min, self._settings['run_cmd']).strip() + "\n")
-      return batpath
-
-   def _schtasks(self, *args):
+   @staticmethod
+   def _schtasks(*args):
       return subprocess.run(
          ' '.join([tok for tok in ['schtasks', *args] if tok]),
          stdout=subprocess.PIPE, stderr=subprocess.STDOUT, check=True,
          universal_newlines=True)
 
+   @staticmethod
+   def _camel_to_snake(s):
+      s = re.sub(r'\s+', '_', s)
+      s = re.sub(r'\W+', '', s)
+      s = s[0].lower() + re.sub(r'[A-Z]', '_\g<0>', s[1:])
+      s = re.sub(r'_+', '_', s)
+      return s.lower()
+
+   @staticmethod
+   def _query_task(taskname):
+      raise NotYetImplemented()
+
+   @staticmethod
+   def _filter_out_headers(headers_csv, tasks_csv):
+      return [t for t in tasks_csv if t != headers_csv]
+
+   @staticmethod
+   def _filter_out_non_top_lv(tasks_csv):
+      return [t for t in tasks_csv if len(t[1].split('\\')) <= 2]
+
+   @staticmethod
+   def _convert_to_task_tuples(headers_csv, tasks_csv):
+      Task = namedtuple('Task', headers_csv)
+      return [Task(*t) for t in tasks_csv]
+
+   @staticmethod
+   def _create_task_dict_from(tasklist):
+      return {os.path.basename(t.task_name):t for t in tasklist}
+
+   @staticmethod
+   def _format_tasks_to_dict(raw_tasks, top_lv_only=True):
+      tasks = raw_tasks.stdout.splitlines()
+      tasks = list(csv.reader(tasks))
+
+      orig_headers = tasks[0]
+      tasks = tasks[1:]
+      headers = [Sched._camel_to_snake(name) for name in orig_headers]
+      tasks = Sched._filter_out_headers(orig_headers, tasks)
+      if top_lv_only:
+         tasks = Sched._filter_out_non_top_lv(tasks)
+
+      tasks = Sched._convert_to_task_tuples(headers, tasks)
+      return Sched._create_task_dict_from(tasks)
+
+   @staticmethod
+   def _query_tasks(top_lv_only=True):
+      tasks = Sched._schtasks('/query', '/fo csv', '/v')
+      tasks = Sched._format_tasks_to_dict(tasks, top_lv_only)
+      return tasks
+
    def _create_task(self, batpath):
-      self._schtasks(
+      Sched._schtasks(
          '/create', '/f',
          '/tr', "\"{}\"".format(batpath),
          '/st', self._settings['start_time'],
@@ -75,8 +115,19 @@ class Sched:
                self._settings['end_date'] else '',
          '/tn', self._settings['name'])
 
-   def _query_task(self, taskname):
-      raise NotYetImplemented()
+   def _create_bat(self):
+      batpath = os.path.realpath(
+         "{}\\{}.bat".format(self._batcave, self._settings['name']))
+      with open(batpath, 'w') as batman:
+         batman.write("@echo off\n")
+         working_dir = '%~dp0' \
+            if self._settings['working_dir'].strip() == '.' \
+            else self._settings['working_dir']
+         batman.write("cd /d {}\n".format(working_dir))
+         start_min = 'start /min' if self._settings['start_min'] else ''
+         batman.write("{} {}".format(
+            start_min, self._settings['run_cmd']).strip() + "\n")
+      return batpath
 
    def _delete_task(self, taskname):
       raise NotYetImplemented()
