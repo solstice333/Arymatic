@@ -192,7 +192,7 @@ class SchedTest(unittest.TestCase):
       shutil.copy('_foo.py', 'batcave\\_foo.py')
       s.schedule_task()
 
-      task = s.query_task()
+      task = s.details()
       self.assertTrue(task)
       self.assertTrue(s.is_scheduled())
       self.assertEqual(task.task_name, '\\_foo')
@@ -207,7 +207,7 @@ class SchedTest(unittest.TestCase):
 
       self.assertTrue(s.deschedule_task())
       self.assertFalse(s.deschedule_task())
-      self.assertFalse(s.query_task())
+      self.assertFalse(s.details())
       self.assertFalse(s.is_scheduled())
 
    def test_create_task_minute(self):
@@ -226,7 +226,7 @@ class SchedTest(unittest.TestCase):
       shutil.copy('_foo.py', 'batcave\\_foo.py')
       s.schedule_task()
 
-      task = s.query_task()
+      task = s.details()
       self.assertTrue(task)
       self.assertTrue(s.is_scheduled())
       self.assertEqual(task.task_name, '\\_foo')
@@ -241,7 +241,7 @@ class SchedTest(unittest.TestCase):
 
       s.deschedule_task()
 
-      self.assertFalse(s.query_task())
+      self.assertFalse(s.details())
       self.assertFalse(s.is_scheduled())
 
    def test_create_task_2_minutes(self):
@@ -260,7 +260,7 @@ class SchedTest(unittest.TestCase):
       shutil.copy('_foo.py', 'batcave\\_foo.py')
       s.schedule_task()
 
-      task = s.query_task()
+      task = s.details()
       self.assertTrue(task)
       self.assertTrue(s.is_scheduled())
       self.assertEqual(task.task_name, '\\_foo')
@@ -275,7 +275,7 @@ class SchedTest(unittest.TestCase):
 
       s.deschedule_task()
 
-      self.assertFalse(s.query_task())
+      self.assertFalse(s.details())
       self.assertFalse(s.is_scheduled())
 
    def test_query_tasks_dict(self):
@@ -414,7 +414,7 @@ class SchedTest(unittest.TestCase):
       now = datetime.now()
       s.schedule_task()
 
-      task = s.query_task()
+      task = s.details()
       self.assertTrue(task)
       self.assertTrue(s.is_scheduled())
       self.assertEqual(task.task_name, '\\_foo')
@@ -433,7 +433,7 @@ class SchedTest(unittest.TestCase):
 
       s.deschedule_task()
 
-      self.assertFalse(s.query_task())
+      self.assertFalse(s.details())
       self.assertFalse(s.is_scheduled())
 
    def tearDown(self):

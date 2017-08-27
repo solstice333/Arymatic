@@ -140,7 +140,7 @@ class Sched:
       return batpath
 
    @staticmethod
-   def query_tasks_for(taskname):
+   def details_for(taskname):
       try:
          return Sched._query_tasks_dict(taskname)[taskname]
       except subprocess.CalledProcessError as cpe:
@@ -152,7 +152,7 @@ class Sched:
 
    @staticmethod
    def is_task_scheduled(taskname):
-      return bool(Sched.query_tasks_for(taskname))
+      return bool(Sched.details_for(taskname))
 
    @staticmethod
    def deschedule_task_with_taskname(taskname):
@@ -199,8 +199,8 @@ class Sched:
    def deschedule_task(self):
       return Sched.deschedule_task_with_taskname(self._settings['name'])
 
-   def query_task(self):
-      return Sched.query_tasks_for(self._settings['name'])
+   def details(self):
+      return Sched.details_for(self._settings['name'])
 
    def is_scheduled(self):
       return Sched.is_task_scheduled(self._settings['name'])
