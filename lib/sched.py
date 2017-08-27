@@ -276,6 +276,35 @@ class Sched:
       JSON structure should be for a valid settings file. Refer to the
       defaults dictionary in the code below to know what the optional
       settings are.
+
+      valid={
+         'name': '*:str',
+         'run_cmd': '*:str',
+         'working_dir': '*:str',
+         'start_min': '*:bool',
+         'start_time': [r'\d{2}:\d{2}:re', ''],
+         'schedule': ['once', 'minute', 'hourly', 'daily', 'quarterly',
+                      'weekly', 'monthly', 'onstart', 'onlogon', 'onidle'],
+         'days': ['MON', 'TUE', 'WED', 'THU',
+                  'FRI', 'SAT', 'SUN'],
+         'months': ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+                    'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
+         'modifier': ['*:int',
+                      'FIRST', 'SECOND', 'THIRD', 'FOURTH',
+                      'LAST', 'LASTDAY', ''],
+         'start_date': [r'\d{2}\\\d{2}\\\d{4}:re', ''],
+         'end_date': [r'\d{2}\\\d{2}\\\d{4}:re', '']
+      }
+      defaults={
+         'working_dir': '.',
+         'start_min': True,
+         'start_time': '',
+         'days': [],
+         'months': [],
+         'modifier': '',
+         'start_date': '',
+         'end_date': ''
+      }
       """
 
       self._settings = Settings(
