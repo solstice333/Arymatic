@@ -19,6 +19,8 @@ $ python -m unittest discover -v -p *_test.py
 
 **TODO**
 
+See tests/settings_test.py for now
+
 ## API
 ```
 Help on module lib.others in lib:
