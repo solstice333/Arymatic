@@ -251,6 +251,11 @@ class Sched:
 
    @staticmethod
    def _inject_translation_settings(settings_file):
+      """inject any settings into the JSON configuration read from
+      |settings_file| and return the updated dictionary. Right now
+      this checks if a 'quarterly' schedule was specified and
+      translates it to every 92 days."""
+
       with open(settings_file, 'r') as shandle:
          settings = json.load(shandle)
 

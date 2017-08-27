@@ -436,6 +436,38 @@ class SchedTest(unittest.TestCase):
       self.assertFalse(s.details())
       self.assertFalse(s.is_scheduled())
 
+   def test_create_task_quarterly(self):
+      Sched.gen_sched_settings_file(
+         'foo.json',
+         name='_foo',
+         run_cmd='python _foo.py',
+         schedule='quarterly')
+      s = Sched('foo.json')
+      now = datetime.now()
+      s.schedule_task()
+
+      task = s.details()
+      self.assertTrue(task)
+      self.assertTrue(s.is_scheduled())
+      self.assertEqual(task.task_name, '\\_foo')
+      self.assertEqual(task.schedule_type, 'Daily ')
+      self.assertEqual(task.repeat_every, 'Disabled')
+      self.assertEqual(task.days, 'Every 92 day(s)')
+      self.assertEqual(
+         datetime.strptime(task.start_time, "%I:%M:%S %p").time(),
+         now.replace(second=0, microsecond=0).time())
+      self.assertEqual(
+         datetime.strptime(task.start_date, '%m/%d/%Y').date(),
+         datetime.now().date())
+      self.assertEqual(
+         datetime.strptime(task.next_run_time, "%m/%d/%Y %I:%M:%S %p"),
+         datetime.now().replace(second=0, microsecond=0) + timedelta(days=92))
+
+      s.deschedule_task()
+
+      self.assertFalse(s.details())
+      self.assertFalse(s.is_scheduled())
+
    def tearDown(self):
       dammit.keep_fkn_trying(self.remove_all_json)
       dammit.keep_fkn_trying(self.remove_batcave)
