@@ -199,7 +199,7 @@ class SchedTest(unittest.TestCase):
       self.assertEqual(task.schedule_type, 'One Time Only')
       self.assertEqual(task.repeat_every, 'Disabled')
       self.assertEqual(
-         datetime.strptime(task.start_time, "%H:%M:%S %p").time(),
+         datetime.strptime(task.start_time, "%I:%M:%S %p").time(),
          next_minute.replace(second=0, microsecond=0).time())
       self.assertEqual(
          datetime.strptime(task.start_date, '%m/%d/%Y').date(),
@@ -233,7 +233,7 @@ class SchedTest(unittest.TestCase):
       self.assertEqual(task.schedule_type, 'One Time Only, Minute ')
       self.assertEqual(task.repeat_every, '0 Hour(s), 1 Minute(s)')
       self.assertEqual(
-         datetime.strptime(task.start_time, "%H:%M:%S %p").time(),
+         datetime.strptime(task.start_time, "%I:%M:%S %p").time(),
          next_minute.replace(second=0, microsecond=0).time())
       self.assertEqual(
          datetime.strptime(task.start_date, '%m/%d/%Y').date(),
@@ -267,7 +267,7 @@ class SchedTest(unittest.TestCase):
       self.assertEqual(task.schedule_type, 'One Time Only, Minute ')
       self.assertEqual(task.repeat_every, '0 Hour(s), 2 Minute(s)')
       self.assertEqual(
-         datetime.strptime(task.start_time, "%H:%M:%S %p").time(),
+         datetime.strptime(task.start_time, "%I:%M:%S %p").time(),
          next_minute.replace(second=0, microsecond=0).time())
       self.assertEqual(
          datetime.strptime(task.start_date, '%m/%d/%Y').date(),
@@ -421,13 +421,13 @@ class SchedTest(unittest.TestCase):
       self.assertEqual(task.schedule_type, 'Monthly')
       self.assertEqual(task.repeat_every, 'Disabled')
       self.assertEqual(
-         datetime.strptime(task.start_time, "%H:%M:%S %p").time(),
+         datetime.strptime(task.start_time, "%I:%M:%S %p").time(),
          now.replace(second=0, microsecond=0).time())
       self.assertEqual(
          datetime.strptime(task.start_date, '%m/%d/%Y').date(),
          datetime.now().date())
       self.assertEqual(
-         datetime.strptime(task.next_run_time, "%m/%d/%Y %H:%M:%S %p"),
+         datetime.strptime(task.next_run_time, "%m/%d/%Y %I:%M:%S %p"),
          self.incr_month_dt(
             datetime.now().replace(day=1, second=0, microsecond=0)))
 

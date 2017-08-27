@@ -249,6 +249,19 @@ class Sched:
 
       return Sched._delete_task(taskname)
 
+   @staticmethod
+   def _inject_translation_settings(settings_file):
+      with open(settings_file, 'r') as shandle:
+         settings = json.load(shandle)
+
+         if settings['schedule'] == 'quarterly':
+            settings.update({
+               'schedule': 'daily',
+               'modifier': 92
+            })
+
+      return settings
+
    def __init__(self, settings_file, batcave='batcave'):
       """create a Sched handle object with configuration based on the JSON
       |settings_file| which is the path to the settings file. |batcave|
@@ -261,14 +274,14 @@ class Sched:
       """
 
       self._settings = Settings(
-         settings_file,
+         Sched._inject_translation_settings(settings_file),
          valid={
             'name': '*:str',
             'run_cmd': '*:str',
             'working_dir': '*:str',
             'start_min': '*:bool',
             'start_time': [r'\d{2}:\d{2}:re', ''],
-            'schedule': ['once', 'minute', 'hourly', 'daily',
+            'schedule': ['once', 'minute', 'hourly', 'daily', 'quarterly',
                          'weekly', 'monthly', 'onstart', 'onlogon', 'onidle'],
             'days': ['MON', 'TUE', 'WED', 'THU',
                      'FRI', 'SAT', 'SUN'],
@@ -290,6 +303,7 @@ class Sched:
             'start_date': '',
             'end_date': ''
          })
+
       if not os.path.isdir(batcave):
          dammit.keep_fkn_trying(self._create_batcave, [batcave])
       self._batcave = batcave
