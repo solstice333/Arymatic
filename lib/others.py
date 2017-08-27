@@ -43,7 +43,8 @@ class Others:
       """return true if others are logged on, false otherwise. |ignore|
       is optional and represents variadic arguments which are usernames
       as strings to ignore; i.e. treat those usernames the same as
-      yourself. All names in |ignore| are case insensitive.
+      yourself. All names in |ignore| are case insensitive. Your
+      username is ignored implicitly.
       """
 
       ignore = set([u.lower() for u in ignore]) if ignore else set()
