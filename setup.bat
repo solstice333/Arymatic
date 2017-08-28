@@ -4,6 +4,24 @@ from winreg import OpenKey, QueryValueEx, SetValueEx, \
 
 import winreg
 import os
+import os.path
+import sys
+
+def run_unit_tests():
+   home = os.getcwd()
+   initial_pythonpath = os.environ.get('PYTHONPATH')
+
+   os.environ['PYTHONPATH'] = os.environ['ARYMATIC_DIR']
+   os.chdir(os.path.join(os.environ['ARYMATIC_DIR'], 'tests'))
+   exst = os.system('python -m unittest discover -v -p *_test.py')
+
+   if initial_pythonpath:
+      os.environ['PYTHONPATH'] = initial_pythonpath
+   else:
+      del os.environ['PYTHONPATH']
+
+   os.chdir(home)
+   return exst
 
 def main():
    arymatic_dir = os.environ['ARYMATIC_DIR']
@@ -30,8 +48,11 @@ def main():
       except FileNotFoundError:
          pythonpath = arymatic_dir 
 
-      SetValueEx(env, 'PYTHONPATH', 0, winreg.REG_SZ, pythonpath)
-      input(restart_msg)
+      if run_unit_tests():
+         sys.stderr.write("Error: tests failed. Backing out of setup\n") 
+      else:
+         SetValueEx(env, 'PYTHONPATH', 0, winreg.REG_SZ, pythonpath)
+         input(restart_msg)
 
 if __name__ == '__main__':
    main()

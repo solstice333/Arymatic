@@ -6,28 +6,12 @@ A way to automate things the Arya way. In general, this is a layer on top of sch
 
 ## Usage:
 
-### Run unit tests:
-
-```
-$ cd <repo_root>
-$ set PYTHONPATH=%PYTHONPATH%;%CD%
-$ cd tests
-$ python -m unittest discover -v -p *_test.py
-```
-
 ### Installation
 
 ```
 $ cd <repo_root>
 $ setup.bat
 $ shutdown /r /t 0
-```
-
-After reboot,
-
-```
-$ cd <repo_root>\tests
-$ python -m unittest discover -v -p *_test.py
 ```
 
 ### API Usage Examples:
