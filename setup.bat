@@ -44,7 +44,7 @@ def main():
             except KeyError:
                input(restart_msg)
             exit(0)
-         pythonpath += ";{}".format(arymatic_dir)
+         pythonpath = "{};{}".format(arymatic_dir, pythonpath)
       except FileNotFoundError:
          pythonpath = arymatic_dir 
 
