@@ -31,11 +31,43 @@ class SchedTest(unittest.TestCase):
       if os.path.isfile('_foo.txt'):
          os.remove('_foo.txt')
 
-   def block_until_complete(self, compl_dt, extra=0):
-      while datetime.now() < compl_dt:
-         time.sleep(1)
-      for s in range(0, extra):
-         time.sleep(1)
+   def cond_check(self, cond, args=None, kwargs=None):
+      if args and kwargs:
+         return cond(*args, **kwargs)
+      elif args:
+         return cond(*args)
+      elif kwargs:
+         return cond(**kwargs)
+      else:
+         return cond()
+
+   def block_until_cond(self, cond_cb, args=None, kwargs=None, timeout=None):
+      if timeout:
+         for i in range(0, timeout):
+            if self.cond_check(cond_cb, args, kwargs):
+               break
+            time.sleep(1)
+      else:
+         while True:
+            if self.cond_check(cond_cb, args, kwargs):
+               break
+            time.sleep(1)
+
+   def block_until_complete(self, compl_dt,
+                            extra_int_or_cb=None,
+                            extra_args=None, extra_kwargs=None,
+                            extra_timeout=None):
+      self.block_until_cond(lambda: datetime.now() >= compl_dt)
+      if extra_int_or_cb is None:
+         pass
+      elif isinstance(extra_int_or_cb, int):
+         for i in range(0, extra_int_or_cb):
+            time.sleep(1)
+      elif callable(extra_int_or_cb):
+         self.block_until_cond(
+            extra_int_or_cb, extra_args, extra_kwargs, extra_timeout)
+      else:
+         raise TypeError()
 
    def incr_month(self, m):
       return (m + 1)%12 or 12
@@ -167,7 +199,8 @@ class SchedTest(unittest.TestCase):
       shutil.copy('_foo.py', 'batcave\\_foo.py')
       s.schedule_task()
 
-      self.block_until_complete(next_minute.replace(second=0), 2)
+      self.block_until_complete(next_minute.replace(second=0),
+         lambda: os.path.isfile('batcave\\_foo.txt'), extra_timeout=15)
 
       self.assertEqual(len(glob('batcave\\_foo*.txt')), 1)
 
