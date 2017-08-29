@@ -25,7 +25,7 @@ def run_unit_tests():
 
 def main():
    arymatic_dir = os.environ['ARYMATIC_DIR']
-   restart_msg = "Please restart your computer " + \
+   restart_msg = "Please log off and log back on " + \
       "for the changes to take effect.\n" + \
       "Hit Enter to continue"
 

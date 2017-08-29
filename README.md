@@ -11,8 +11,9 @@ A way to automate things the Arya way. In general, this is a layer on top of sch
 ```
 $ cd <repo_root>
 $ setup.bat
-$ shutdown /r /t 0
 ```
+
+Log off and log back on.
 
 ### API Usage Examples:
 
