@@ -347,7 +347,11 @@ class Sched:
       defined by the settings file
       """
 
-      self._create_task(self._create_bat())
+      try:
+         self._create_task(self._create_bat())
+      except subprocess.CalledProcessError as cpe:
+         print(cpe.output)
+         raise cpe
 
    def deschedule_task(self):
       """deschedule the task that is bound to this Sched handle object and
