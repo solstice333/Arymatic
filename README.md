@@ -2,11 +2,13 @@
 
 ## Description:
 
-A way to automate things the Arya way. In general, this is a layer on top of schtasks that allows the user to define how to schedule tasks by defining a simple JSON file then scheduling it using the `lib.sched.Sched.schedule_task()` method.
+A way to automate things the Arya way. In general, this is a layer on top of schtasks that allows the user to define how to schedule tasks by defining a simple JSON file then scheduling it using the `lib.sched.Sched.schedule_task()` method. Tested with Python 3.6.1 on Windows 7 Ultimate SP1.
 
 ## Usage:
 
 ### Installation
+
+Make sure you have at least Python 3.6.1 installed on Windows.
 
 ```
 $ cd <repo_root>
