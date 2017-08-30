@@ -19,8 +19,6 @@ Log off and log back on.
 
 ### API Usage Examples:
 
-**TODO**
-
 See tests/settings_test.py for now
 
 ## API
@@ -272,3 +270,11 @@ CLASSES
      |      list of weak references to the object (if defined)
 
 ```
+
+## TODO
+
+- Sched.reload() API to update _settings based on json changes
+- Scheduler CLI frontend
+- API Usage examples doc
+- Add a traceback for Settings to help with client side debugging
+- Sikuli API
